@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code Workflow Handbook</title>
+<style>
+:root{
+  --ground:#FAFBFC;
+  --panel:#F0F3F6;
+  --ink:#1C2733;
+  --muted:#5A6B7C;
+  --accent:#2B4C8C;
+  --tint:#EAF0F8;
+  --line:#D8DFE6;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei","Segoe UI",-apple-system,sans-serif;
+  font-size:16px;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+a{color:var(--accent);}
+a:focus-visible, summary:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+.sidebar-toc{
+  position:fixed;
+  top:0; left:0; bottom:0;
+  width:260px;
+  overflow-y:auto;
+  padding:2rem 1.25rem;
+  border-right:1px solid var(--line);
+  background:var(--ground);
+}
+.toc-heading{
+  font-weight:700;
+  font-size:0.95rem;
+  letter-spacing:0.02em;
+  margin:0 0 1.25rem;
+  color:var(--ink);
+}
+.toc-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+}
+.toc-list li{margin:0;}
+.toc-list a{
+  display:flex;
+  gap:0.5rem;
+  align-items:baseline;
+  padding:0.4rem 0.5rem;
+  border-radius:4px;
+  text-decoration:none;
+  color:var(--ink);
+  font-size:0.92rem;
+}
+.toc-list a:hover{background:var(--tint);}
+.toc-list a.active{
+  background:var(--tint);
+  color:var(--accent);
+  font-weight:700;
+}
+.toc-num{
+  font-family:ui-monospace,"Cascadia Code",Consolas,monospace;
+  color:var(--accent);
+  letter-spacing:0.08em;
+  font-size:0.82em;
+  flex:0 0 auto;
+}
+.mobile-bar{display:none;}
+.mobile-bar .toc-disclosure{
+  border-bottom:1px solid var(--line);
+  background:var(--ground);
+}
+.mobile-bar summary{
+  cursor:pointer;
+  padding:0.85rem 1.25rem;
+  font-weight:700;
+  list-style:none;
+}
+.mobile-bar summary::-webkit-details-marker{display:none;}
+.mobile-bar .mobile-toc{
+  position:static;
+  width:auto;
+  border-right:none;
+  padding:0 1.25rem 1rem;
+}
+main{
+  margin-left:260px;
+  padding:3rem 2.5rem;
+  max-width:62rem;
+}
+.chapter{padding-top:5rem;}
+.chapter:first-of-type{padding-top:2rem;}
+.chapter-head{
+  border-bottom:1px solid var(--line);
+  padding-bottom:0.75rem;
+  margin-bottom:1.5rem;
+}
+.eyebrow{
+  display:block;
+  font-family:ui-monospace,"Cascadia Code",Consolas,monospace;
+  color:var(--accent);
+  letter-spacing:0.08em;
+  font-size:0.85rem;
+  margin-bottom:0.35rem;
+}
+h1{
+  font-weight:700;
+  font-size:1.6rem;
+  letter-spacing:0.02em;
+  margin:0;
+}
+h2{
+  font-weight:700;
+  font-size:1.25rem;
+  border-left:2px solid var(--accent);
+  padding-left:0.65rem;
+  margin:2.25rem 0 1rem;
+}
+h3{
+  font-weight:700;
+  font-size:1.05rem;
+  margin:1.75rem 0 0.75rem;
+}
+p{margin:0 0 1rem;}
+ul, ol{margin:0 0 1rem; padding-left:1.5rem;}
+li{margin:0 0 0.4rem;}
+li > ul, li > ol{margin-top:0.4rem;}
+code{
+  font-family:ui-monospace,"Cascadia Code",Consolas,monospace;
+  font-size:0.88em;
+  background:var(--tint);
+  border-radius:3px;
+  padding:0.05em 0.35em;
+}
+pre.code-block{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:1rem;
+  overflow-x:auto;
+  margin:0 0 1.25rem;
+}
+pre.code-block code{
+  background:none;
+  padding:0;
+  font-size:0.85em;
+  white-space:pre;
+}
+.diagram{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:1rem;
+  overflow-x:auto;
+  margin:0 0 1.25rem;
+}
+.diagram pre.mermaid{
+  margin:0;
+  font-family:ui-monospace,"Cascadia Code",Consolas,monospace;
+  font-size:0.82em;
+  white-space:pre;
+  background:none;
+  border:none;
+  padding:0;
+}
+.diagram-caption{
+  margin:0.6rem 0 0;
+  color:var(--muted);
+  font-size:0.82rem;
+}
+.callout{
+  background:var(--tint);
+  border-left:3px solid var(--accent);
+  margin:0 0 1.25rem;
+  padding:0.75rem 1rem;
+  border-radius:0 4px 4px 0;
+}
+.callout p{margin:0;}
+.table-wrap{
+  overflow-x:auto;
+  margin:0 0 1.25rem;
+}
+table{
+  border-collapse:collapse;
+  width:100%;
+  font-variant-numeric:tabular-nums;
+  font-size:0.92rem;
+}
+th, td{
+  border:1px solid var(--line);
+  padding:0.5rem 0.75rem;
+  text-align:left;
+  vertical-align:top;
+  word-break:break-word;
+}
+th{
+  background:var(--panel);
+  font-weight:700;
+  white-space:nowrap;
+}
+a.xref{text-decoration:underline;}
+footer{
+  margin-left:260px;
+  padding:2rem 2.5rem 3rem;
+  max-width:62rem;
+  color:var(--muted);
+  font-size:0.85rem;
+  border-top:1px solid var(--line);
+}
+@media (max-width: 900px){
+  .sidebar-toc{display:none;}
+  .mobile-bar{display:block; position:sticky; top:0; z-index:10;}
+  main, footer{margin-left:0; padding-left:1.25rem; padding-right:1.25rem; max-width:none;}
+}
+</style>
+</head>
+<body>
+<header class="mobile-bar">
+<details class="toc-disclosure">
+<summary>目錄</summary>
+<nav aria-label="手冊章節目錄" class="mobile-toc">
+<p class="toc-heading">Claude Code Workflow Handbook</p>
+<ul class="toc-list">
+<li><a href="#ch-readme"><span class="toc-num">序</span><span class="toc-title">Claude Code Workflow Handbook</span></a></li>
+<li><a href="#ch-00"><span class="toc-num">00</span><span class="toc-title">全貌與架構圖</span></a></li>
+<li><a href="#ch-01"><span class="toc-num">01</span><span class="toc-title">自訂 Agent 與派工模式</span></a></li>
+<li><a href="#ch-02"><span class="toc-num">02</span><span class="toc-title">Plugin 與 Skills 盤點</span></a></li>
+<li><a href="#ch-03"><span class="toc-num">03</span><span class="toc-title">全部 Hooks 與閘門設計</span></a></li>
+<li><a href="#ch-04"><span class="toc-num">04</span><span class="toc-title">完整開發流程與多 Session</span></a></li>
+<li><a href="#ch-05"><span class="toc-num">05</span><span class="toc-title">dev-kb — AI 的 Second Brain</span></a></li>
+<li><a href="#ch-06"><span class="toc-num">06</span><span class="toc-title">通用規則手冊</span></a></li>
+<li><a href="#ch-07"><span class="toc-num">07</span><span class="toc-title">快速上手：分階段複刻指南</span></a></li>
+</ul>
+</nav>
+</details>
+</header>
+
+<nav aria-label="手冊章節目錄" class="sidebar-toc">
+<p class="toc-heading">Claude Code Workflow Handbook</p>
+<ul class="toc-list">
+<li><a href="#ch-readme"><span class="toc-num">序</span><span class="toc-title">Claude Code Workflow Handbook</span></a></li>
+<li><a href="#ch-00"><span class="toc-num">00</span><span class="toc-title">全貌與架構圖</span></a></li>
+<li><a href="#ch-01"><span class="toc-num">01</span><span class="toc-title">自訂 Agent 與派工模式</span></a></li>
+<li><a href="#ch-02"><span class="toc-num">02</span><span class="toc-title">Plugin 與 Skills 盤點</span></a></li>
+<li><a href="#ch-03"><span class="toc-num">03</span><span class="toc-title">全部 Hooks 與閘門設計</span></a></li>
+<li><a href="#ch-04"><span class="toc-num">04</span><span class="toc-title">完整開發流程與多 Session</span></a></li>
+<li><a href="#ch-05"><span class="toc-num">05</span><span class="toc-title">dev-kb — AI 的 Second Brain</span></a></li>
+<li><a href="#ch-06"><span class="toc-num">06</span><span class="toc-title">通用規則手冊</span></a></li>
+<li><a href="#ch-07"><span class="toc-num">07</span><span class="toc-title">快速上手：分階段複刻指南</span></a></li>
+</ul>
+</nav>
+
+<main>
+<section id="ch-readme" class="chapter">
+<div class="chapter-head"><span class="eyebrow">序</span><h1>Claude Code Workflow Handbook</h1></div>
+<p>這是一套「單人指揮多個 AI agent」的開發流程完整說明書。內容涵蓋角色分工、機械化的品質閘門（hooks）、標準開發流程、以及外部化的第二大腦知識庫（dev-kb）。無論你是想理解這套流程怎麼運作的人，還是要照著複刻一套類似環境的 AI，都可以照這份手冊逐章讀下去。先講清楚一個限制：這份 handbook 單獨分享出去時，<code>files/</code> 快照不含 dev-kb 自己的工具原始碼（<code>tools/</code>），所以 <a href="#ch-07" class="xref">07-quickstart.md</a> 階段 3、4（dev-kb 上線、多 session 協作）沒辦法直接拷檔案複刻，要嘛另外取得一份跑得動的 dev-kb repo，要嘛照 <a href="#ch-05" class="xref">05-dev-kb.md</a> 的資料結構規格重建等效工具——詳見 07 章階段 3 的說明。</p>
+<h2>目錄</h2>
+<div class="table-wrap"><table><thead><tr><th>章節</th><th>內容</th></tr></thead><tbody><tr><td><a href="#ch-00" class="xref">00-overview.md</a></td><td>全貌與架構圖</td></tr><tr><td><a href="#ch-01" class="xref">01-agents-cowork.md</a></td><td>自訂 agent 與派工模式</td></tr><tr><td><a href="#ch-02" class="xref">02-plugins-skills.md</a></td><td>plugins 與 skills 盤點</td></tr><tr><td><a href="#ch-03" class="xref">03-hooks.md</a></td><td>全部 hooks 與閘門設計</td></tr><tr><td><a href="#ch-04" class="xref">04-dev-flow.md</a></td><td>完整開發流程與多 session</td></tr><tr><td><a href="#ch-05" class="xref">05-dev-kb.md</a></td><td>dev-kb second brain 設計</td></tr><tr><td><a href="#ch-06" class="xref">06-common-rules.md</a></td><td>通用規則手冊</td></tr><tr><td><a href="#ch-07" class="xref">07-quickstart.md</a></td><td>分階段複刻指南</td></tr></tbody></table></div>
+<h2>讀者指引</h2>
+<ul><li><strong>想先看全貌</strong> → 從 <a href="#ch-00" class="xref">00-overview.md</a> 開始，會有一張架構圖跟四大支柱的總覽。</li><li><strong>想直接動手裝一套</strong> → 跳去 <a href="#ch-07" class="xref">07-quickstart.md</a>，裡面是分階段的複刻步驟，不用整本從頭讀。</li><li><strong>AI 要照這套手冊複刻環境時</strong>，建議一次只載入需要的那一章，不要整本塞進 context——每章都是獨立可讀的單位，彼此用連結互相參照，不需要同時全部載入才看得懂。</li></ul>
+<h2>維護規則（變更驅動）</h2>
+<p>這套手冊不是寫完就結束，而是跟著實際環境走。判斷要不要更新的規則很簡單：<strong>只要你動到 hooks、agents、plugins、CLAUDE.md 這四類設定的其中一類，收尾前就跑一次 <code>node handbook/tools/sync.js</code></strong>（repo 根目錄或 <code>handbook/</code> 目錄下執行都可以，<code>cd handbook/tools &amp;&amp; node sync.js</code> 也行——路徑都是相對 script 自己的位置算的，不看你在哪個目錄下 <code>cd</code> 進去）。</p>
+<p><code>sync.js</code> 會做兩件事：把最新的原始檔同步一份快照進 <code>files/</code>，然後拿文件裡寫的清單（hook 清單、agent 清單、plugin 清單）跟實際環境比對，兩邊對不上就印警告。看到警告，就回去補寫對應章節的內容，讓文件跟實際環境保持一致。乾淨無警告 exit 0，有警告（drift）exit 1。</p>
+<p>HTML 快照（<code>html/handbook.html</code>）不在變更驅動範圍內，只有使用者明確要求時才重新產生。</p>
+<h2>快照說明</h2>
+<p><code>files/</code> 目錄底下放的是某一天環境的真實檔案快照，快照的確切日期記在 <code>files/SNAPSHOT.md</code>。正文（00–07 各章）是規格化之後的說明，是這套文件的主要依據；<code>files/</code> 底下的快照則是給想直接看原始檔案長什麼樣子的人當參考實作用，兩者如果有出入，以正文為準，並依照上面的維護規則回頭同步。</p>
+</section>
+
+<section id="ch-00" class="chapter">
+<div class="chapter-head"><span class="eyebrow">00</span><h1>全貌與架構圖</h1></div>
+<h2>這套流程解決什麼</h2>
+<p>一個人開發軟體，卻想同時擁有「深度思考」「大量機械執行」「多角度審查」的產出品質，靠人力硬做是撐不住的。這套流程的做法是：找一個「指揮官」AI session 專門負責規劃、拆任務、派工，它自己<strong>不</strong>動手寫程式；實際的實作工作交給另外派出去的 worker agent 去做，而且依照任務難度指定不同等級的模型——難的架構決策、疑難雜症用推理能力強（也比較貴）的模型處理，例行性的機械改動用便宜的模型處理，避免整天用最貴的模型做搬磚頭的事。</p>
+<p>光靠「叫 AI 認真做」是沒有保障的，所以品質閘門盡量做成機械強制：該擋的動作用 hook 攔下來，不是靠 AI 自己記得要做。送出去的成果還要過「多席審查」——不是只有一個 reviewer 覆核，而是有專門找碴的對抗審查席、針對特定語言/框架的審查席，甚至請一個不同家的外部模型（Codex）當「外部第二意見」，降低同一個模型系統性看不出自己盲點的風險。</p>
+<p>單一 session 的對話視窗是有限的，長期累積下來的技術決策、規則、待辦事項不可能全部塞在對話裡面。這套流程把這些長期知識搬到對話之外的檔案型知識庫（dev-kb）跟 memory 檔案裡，讓任何一個新開的 session 都能接續前一個 session 留下的進度，而不用每次都從頭解釋一遍。</p>
+<h2>四大支柱</h2>
+<h3>席次分工</h3>
+<p>不同任務指定不同的 AI「席次」去做，而不是同一個 AI 從頭做到尾。指揮官只規劃跟派工；深度推理型 worker 處理架構、難 bug、邊界情境；機械執行型 worker 處理範圍明確的例行改動；審查席另外派人，而且每次審查都是新派的 agent，避免「自己審自己」的盲點。細節、seat 對照表、派工判斷邏輯見 <a href="#ch-01" class="xref">01-agents-cowork.md</a>。</p>
+<h3>機械閘門</h3>
+<p>流程規則不能只靠 AI「記得要做」，容易漏、容易在忙的時候被跳過。所以關鍵檢查點（session 開始/結束、工具呼叫前後、要 commit 前）都掛 hook，用程式碼機械擋下不符合規則的動作，而不是靠文件提醒。完整 hook 清單跟每個閘門的設計邏輯見 <a href="#ch-03" class="xref">03-hooks.md</a>。</p>
+<h3>標準流程</h3>
+<p>從發想、規劃、實作、審查到出貨、收尾，有一套固定走法，每個階段有對應的 hook 卡點。多個 session 平行開發時也有一套避免互相踩線的規則。完整流程圖跟多 session 協作方式見 <a href="#ch-04" class="xref">04-dev-flow.md</a>。</p>
+<h3>外部記憶</h3>
+<p>技術決策、規則、待辦事項、歷史教訓都存在對話之外的檔案裡（dev-kb 這個「第二大腦」＋各種 memory 檔案），不靠單一 session 的對話記憶。任何新開的 session 讀這些檔案就能接手前面沒做完的工作。資料結構、生命週期、工具指令見 <a href="#ch-05" class="xref">05-dev-kb.md</a>。</p>
+<h2>整體架構</h2>
+<div class="diagram"><pre class="mermaid">%%{init: {"theme":"neutral"}}%%
+graph TD
+    User(使用者) --&gt;|下指令 / 給回饋| Commander[指揮官 session]
+
+    subgraph Workers["worker agents（派工對象）"]
+        DeepReasoner[deep-reasoner&lt;br/&gt;深度推理]
+        FastWorker[fast-worker&lt;br/&gt;機械執行]
+        DeepReviewer[deep-reviewer&lt;br/&gt;對抗審查]
+        FastReviewer[fast-reviewer&lt;br/&gt;一般審查]
+    end
+
+    Commander --&gt;|拆任務派工| Workers
+    Commander --&gt;|外部第二意見| Codex[Codex&lt;br/&gt;外部 reviewer]
+
+    subgraph HookLayer["hooks（機械閘門）"]
+        SessionHooks[session 事件 hook]
+        ToolHooks[tool 呼叫 hook]
+    end
+
+    SessionHooks -.攔截.-&gt; Commander
+    ToolHooks -.攔截.-&gt; Workers
+
+    Workers --&gt;|讀寫程式碼| Repo[(demo-app repo&lt;br/&gt;工作對象)]
+    Codex --&gt;|審查意見| Commander
+
+    Commander &lt;--&gt;|讀寫決策/進度| KB[(dev-kb + memory&lt;br/&gt;持久層)]
+    Workers -.落卡 / 查資料.-&gt; KB</pre><p class="diagram-caption">圖（mermaid）</p></div>
+<p>架構圖的閱讀方式：使用者只跟指揮官 session 對話；指揮官不自己動手，把任務拆給對應的 worker agent 或外部的 Codex；所有 agent 實際改動的對象都是 demo-app repo；hooks 掛在 session 事件跟工具呼叫這兩個攔截點上，不管是指揮官還是 worker 都受它約束；dev-kb 跟 memory 是所有 session 共用的持久層，指揮官跟 worker 都會讀寫。</p>
+<h2>文件地圖</h2>
+<div class="table-wrap"><table><thead><tr><th>我想做什麼</th><th>看哪一章</th></tr></thead><tbody><tr><td>想知道整個系統長什麼樣子</td><td><a href="#ch-00" class="xref">00-overview.md</a>（本章）</td></tr><tr><td>想知道有哪些 AI 角色、怎麼派工、審查怎麼跑</td><td><a href="#ch-01" class="xref">01-agents-cowork.md</a></td></tr><tr><td>想知道用了哪些 plugin / skill、為什麼</td><td><a href="#ch-02" class="xref">02-plugins-skills.md</a></td></tr><tr><td>想知道有哪些機械閘門、各自擋什麼</td><td><a href="#ch-03" class="xref">03-hooks.md</a></td></tr><tr><td>想知道一個任務從發想到出貨的完整流程</td><td><a href="#ch-04" class="xref">04-dev-flow.md</a></td></tr><tr><td>想知道知識庫怎麼設計、怎麼查、怎麼維護</td><td><a href="#ch-05" class="xref">05-dev-kb.md</a></td></tr><tr><td>想知道有哪些通用規則、為什麼這樣訂</td><td><a href="#ch-06" class="xref">06-common-rules.md</a></td></tr><tr><td>想直接動手複刻一套</td><td><a href="#ch-07" class="xref">07-quickstart.md</a></td></tr></tbody></table></div>
+</section>
+
+<section id="ch-01" class="chapter">
+<div class="chapter-head"><span class="eyebrow">01</span><h1>自訂 Agent 與派工模式</h1></div>
+<h2>角色分工總覽</h2>
+<p>這套流程裡有三種「身分」：一個指揮官、四個釘死 model 的自訂 worker agent、一個外部 reviewer。</p>
+<ul><li><strong>指揮官</strong>：使用者實際對話的那個 session，負責規劃、拆任務、把工作派給對的 worker、把 worker 回報的結果整合起來。指揮官自己<strong>不動手寫 code、不查 bug</strong>——所有實際改動都是派工做出來的。</li><li><strong>worker agent</strong>：四個各自釘死特定 model 的自訂 agent，分成「兩個做事的」跟「兩個審查的」。細節見下一節。</li><li><strong>外部 reviewer</strong>：Codex，一個跟指揮官／worker 不同來源的模型，只在審查流程的最後一關出場，補一個「外部意見」。</li></ul>
+<p>「釘死 model」是這章的核心概念：一個 agent 檔案裡直接寫死要用哪一個模型（例如 Sonnet），派工的時候不管誰去叫它，永遠用同一個模型執行，不會被主 session 目前掛的模型「傳染」。</p>
+<p>席次總覽：</p>
+<div class="table-wrap"><table><thead><tr><th>席位</th><th>由誰擔任</th><th>做什麼</th><th>model 是否釘死</th></tr></thead><tbody><tr><td>指揮官</td><td>使用者對話的主 session</td><td>規劃、拆任務、整合結果、跟使用者對話——自己不動手改程式碼</td><td>否，就是當下對話的那個 session</td></tr><tr><td>深度推理 worker</td><td>deep-reasoner</td><td>架構設計、難 bug、安全或邊界敏感的改動、寫實作計畫、審查有份量的 diff</td><td>是</td></tr><tr><td>機械執行 worker</td><td>fast-worker</td><td>測試、fixture、樣板 code、lint shell script、例行改檔、格式化</td><td>是</td></tr><tr><td>對抗審查／confirm 席</td><td>deep-reviewer</td><td>找修正引入的新缺陷、CRITICAL/HIGH 的 confirm 輪、安全與邊界審查</td><td>是</td></tr><tr><td>confirm／design pass 席</td><td>fast-reviewer</td><td>confirm 輪、UI diff 的 design pass、機械 checklist 審查</td><td>是</td></tr><tr><td>外部第二意見</td><td>Codex（外部工具，不是本專案自訂的 agent）</td><td>在自家審查全部收斂之後，補一輪不同來源模型的意見</td><td>不適用，是外部工具</td></tr></tbody></table></div>
+<p>模型檔次補充說明：這裡出現的 Opus、Sonnet、Haiku 是同一個模型家族裡由強到快、由貴到便宜排列的三個檔次。Opus 推理能力最強也最貴，適合留給真的需要深度思考的活；Sonnet 是中階的機械執行主力；Haiku 是最便宜的檔次，適合列目錄、找檔案、抓字串這類不太需要推理的活。下一節逐個 agent 說明各自釘的是哪一檔。</p>
+<h2>四個自訂 agent</h2>
+<p>下表是這套流程唯一的四個自訂 worker agent，一個一個對應一支獨立的 agent 定義檔案。</p>
+<div class="table-wrap"><table><thead><tr><th>agent</th><th>model</th><th>effort</th><th>tools</th><th>派給它做什麼</th><th>為什麼要釘死 model</th></tr></thead><tbody><tr><td><code>deep-reasoner</code></td><td>Opus 4.8</td><td>high</td><td>Read / Write / Edit / Bash / Grep / Glob</td><td>架構設計、難 bug（root cause、race condition 這類不明顯的邏輯問題）、安全或邊界敏感的改動（auth、金流、schema migration、Dockerfile、機密處理）、寫實作計畫、審查有份量的 diff</td><td>不釘死就會繼承派工當下主 session 掛的模型，可能忽然變成又貴又不穩定的最新旗艦版，而不是一個穩定可預期的版本</td></tr><tr><td><code>fast-worker</code></td><td>Sonnet</td><td>high</td><td>Read / Write / Edit / Bash / Grep / Glob</td><td>寫測試與 fixture、樣板 code、lint shell script、範圍明確的例行改檔、格式化清理</td><td>同樣道理：機械性的活不釘死 model，也會被繼承成昂貴的推理模型，錢花在不需要深度推理的工作上</td></tr><tr><td><code>deep-reviewer</code></td><td>Opus 4.8</td><td>high</td><td>Read / Grep / Glob / Bash（唯讀，沒有 Write/Edit）</td><td>對抗審查（找這批修正生出的新缺陷）、CRITICAL/HIGH 等級 finding 的 confirm 輪、安全與邊界敏感審查</td><td>審查要跟寫 code 的 agent 分開派，才有獨立性；刻意不給寫入工具，避免審查的過程順手改了被審的程式碼</td></tr><tr><td><code>fast-reviewer</code></td><td>Sonnet</td><td>high</td><td>Read / Grep / Glob / Bash（唯讀，沒有 Write/Edit）</td><td>confirm 輪核對「宣稱修好的東西是不是真的改了」、UI diff 的 design pass、一般機械 checklist 審查</td><td>同樣道理：便宜的審查活如果不釘死 model，一樣會被繼承成昂貴的模型，浪費在不需要深度推理的核對工作上</td></tr></tbody></table></div>
+<p>「effort」是模型推理時的認真程度設定，值愈高，模型愈會多想幾步、回應也愈慢愈貴；這四個 agent 全部釘在 high，因為即使是機械執行或唯讀審查，也不希望它敷衍了事。</p>
+<h2>派工判斷規則</h2>
+<p>決定一項工作要派給誰、用哪個 model，遵守幾條固定規則：</p>
+<ul><li><strong>機械性的活派最便宜能完成的 model。</strong> 不是每件事都值得叫最貴的模型做。</li><li><strong>唯讀的搜尋／定位／列舉類工作，預設用最便宜的檔次（Haiku）。</strong> 找檔案、追 usage、列清單這種不需要深度推理的工作，沒必要升級。</li><li><strong>reviewer 永遠新派一個 agent，不續用剛才做實作的那個。</strong> 讓同一個 agent 審查自己剛寫的東西，等於自己審自己，抓不到自己的盲點。</li><li><strong>implementer 用掉的 context（模型一次能讀進去的對話與檔案內容量，是有限資源）超過某個門檻，就換一個新的 agent 接手，不要硬撐續用同一個對話。</strong> 用量愈高，同一個 agent 繼續做下去愈貴，也愈容易忘記前面讀過什麼。</li><li><strong>有專職的 agent 就用專職的，不要用通用型頂替。</strong> 專職 agent 通常自帶對應的 checklist，也已經釘好 model。</li><li><strong>通用型 agent（沒有在自己的定義檔裡釘死 model 的）一定要在派工時明講要用哪個 model。</strong> 不明講，它就會繼承主 session 當下掛的模型——很多時候那是最貴的一檔，派一個列目錄的小任務去用它，純粹是浪費。</li></ul>
+<p>有些環境會更進一步，直接用 hook（工具呼叫前後自動觸發的檢查程式）把某個特定模型檔次機械封鎖掉——例如某一版模型被判定太貴或還不夠穩定，就直接擋掉所有沒有明講替代 model 的派工。這樣一來「要不要釘 model」就不是靠自律記得，而是不釘就直接被擋下來，逼你明講。</p>
+<h2>Review 席次設計</h2>
+<p>一個 diff 送審的時候，審查不是找一個 reviewer 看過就算，而是同時派出好幾個不同角色的審查席，一次性平行跑完，而不是一個一個排隊做——這樣才不會每個 reviewer 都重新讀一次同一份 diff，浪費時間跟成本。常見的席次組合：</p>
+<ul><li><strong>對抗席</strong>：由 <code>deep-reviewer</code> 擔任，前提設定是「這批修正一定生出了新的缺陷，去把它找出來」，而不是照抄一份 checklist 過一遍。通常會開兩個不同的「切角」，也就是從兩個不同角度分別去看同一份 diff——例如一個切角專門看「幾個修正合在一起會不會互相打架」，另一個切角專門看「資料從建立到刪除這整個生命週期裡有沒有漏掉的狀態」。</li><li><strong>語言別席</strong>：依照 diff 用的程式語言或框架，另外派一個對應的專職審查 agent（例如專門看 TypeScript 的 reviewer），抓語言慣例、型別安全這類通用審查席容易漏掉的細節。</li><li><strong>design pass</strong>：UI 相關的 diff 額外加派的一關，專門核對排版對齊、元素等高等寬、色彩對比這類視覺契約，跟功能是否正確是兩件事，要分開檢查。</li><li><strong>條件席</strong>：不是每次都派的席次，只在符合特定條件時才加派——最常見的是安全審查，只在這批改動真的動到身分驗證、金流或機密資料處理時才派，其他情況不需要。</li><li><strong>confirm 席</strong>：修正完之後，另外新派一個沒做過原始審查的 agent（<code>deep-reviewer</code> 或 <code>fast-reviewer</code>），逐項核對「宣稱修好的每一個 finding，是不是真的改在程式碼裡」。只有存在 CRITICAL 或 HIGH 等級的 finding 時才需要派這一輪，而且只派一次。</li></ul>
+<p>所有審查席回報的 finding，會匯總成一批一次修完，不會照著「誰提的就先修誰的」分批處理——分批修容易漏掉幾個席次之間互相牽連的問題。</p>
+<h2>修正者自檢</h2>
+<p>修正完 finding、要送出交件之前，修正者必須先在自己的回報裡明確回答三個問題，用自我核對取代「送出去才被抓到，再跑第二輪」的往返：</p>
+<ol><li><strong>我改了什麼？</strong> 逐項列出實際改動了哪些檔案、哪些邏輯。</li><li><strong>哪些 finding 沒有改？為什麼？</strong> 不是每個 finding 都要照單全收——如果判斷某個 finding 的前提不成立，要說清楚理由，而不是悶著不提。</li><li><strong>這次改動會不會又生出新問題？</strong> 修正一個問題常常會在別的地方留下新的缺口（例如改寬了一個判斷條件，卻沒同步改到另一個依賴同一個判斷的地方），修正者要主動想過這一層再交件。</li></ol>
+<h2>Codex：外部第二意見（outside voice）</h2>
+<p>Claude 系的所有審查席（對抗席、語言別席、design pass、confirm 席）全部跑完、finding 也修完之後，才輪到 Codex 出場，扮演「outside voice」的角色。</p>
+<ul><li><strong>定位</strong>：Codex 是跟 Claude 系不同來源的模型，不共享同一套訓練上的系統性盲點，適合抓「自家審查看不出來，因為大家都在同一個盲點裡」的問題。</li><li><strong>時機</strong>：一定排在 Claude 審查全部收斂之後才找。太早找，diff 還沒定案，等於讓它花額度審一份還會再改的東西。</li><li><strong>輪次上限</strong>：最多兩輪。第二輪只有在第一輪的 finding 都修正過之後才能跑；跑完第二輪如果還有沒解決的 CRITICAL 或 HIGH，直接修完、交由 Claude 系的審查席確認就好，不再開第三輪。</li><li><strong>工具可以換件</strong>：沒有裝 Codex 的環境，可以用任何「第二家」的模型或工具代替——重點是它跟主要工作用的模型是不同來源，不是非 Codex 不可。</li></ul>
+<p>---</p>
+<p>延伸閱讀：機械閘門怎麼把這些規則變成強制而非自律，見 <a href="#ch-03" class="xref">03-hooks.md</a>；審查在完整開發流程裡的位置，見 <a href="#ch-04" class="xref">04-dev-flow.md</a>。</p>
+</section>
+
+<section id="ch-02" class="chapter">
+<div class="chapter-head"><span class="eyebrow">02</span><h1>Plugin 與 Skills 盤點</h1></div>
+<p>01 章講的是「派給誰做」，這一章講的是「這些角色手上有哪些工具可以用」。Claude Code 的能力不是全部內建，大部分是靠裝 plugin（一個打包好的擴充包，裡面可能包含 skills、agent 定義、slash command）疊上去的。這一章盤點目前實際在用的 5 個 plugin 包，以及裡面真正常用的東西是什麼。</p>
+<h2>在用 plugin 總表</h2>
+<p>下表第一欄是每個 plugin 在本機 cache 目錄裡的資料夾名稱，跟這台機器實際裝的套件一一對應。</p>
+<div class="table-wrap"><table><thead><tr><th>plugin 目錄名</th><th>來源</th><th>裝什麼進來</th><th>什麼時機用</th></tr></thead><tbody><tr><td><code>caveman</code></td><td>第三方套件</td><td>對話與 subagent 輸出的壓縮風格、<code>cavecrew</code> 三個小 agent</td><td>每次對話都在背景省 token；<code>cavecrew</code> 用在小型獨立雜務</td></tr><tr><td><code>claude-code-skills</code></td><td>第三方官方風格 skills 包</td><td>一批以角色命名的 skills（code review、各類 senior-xxx 專家風格等）</td><td>需要特定領域的作業手法時才載入，不常駐</td></tr><tr><td><code>claude-plugins-official</code></td><td>Anthropic 官方 plugin marketplace</td><td><code>superpowers</code>——一整套流程 skill（brainstorming、寫 plan、TDD、debug、驗證……）</td><td>開發流程的每一個關鍵節點都可能觸發</td></tr><tr><td><code>ecc</code></td><td>第三方套件（everything-claude-code）</td><td>一批語言別／領域別 reviewer agent，外加原本很大量、目前多數停用的 slash command</td><td>派 review 席次時當 agent 來源庫</td></tr><tr><td><code>openai-codex</code></td><td>OpenAI 官方</td><td>Codex CLI 整合，提供跟 Claude 系不同來源的模型</td><td>審查流程最後一關的外部第二意見（outside voice，見 <a href="#ch-01" class="xref">01-agents-cowork.md</a>）</td></tr></tbody></table></div>
+<p><code>superpowers</code> 這套流程 skill 不是獨立安裝的，而是跟著 <code>claude-plugins-official</code> 這個官方套件一起裝進來的——講到 superpowers，指的就是這個官方包裡的那組 skills。</p>
+<h2>superpowers 重點 skills</h2>
+<p><code>superpowers</code> 底下有一整組 skill，對應開發流程從頭到尾的每個關鍵節點。常用的幾個：</p>
+<ul><li><strong>brainstorming</strong>：動手寫任何 code 之前先用的 skill，透過一次問一個問題把需求跟設計釐清，直到使用者點頭同意設計為止——目的是擋住「想法還沒想清楚就開始寫」。</li><li><strong>writing-plans</strong>：需求或設計已經定案、還沒動 code 之前用，把工作拆成一個一個具體任務，寫成一份就算換一個完全不熟這個專案的人也能照做的實作計畫。</li><li><strong>subagent-driven-development／executing-plans</strong>：照著寫好的計畫執行的兩種模式——前者是在同一個 session 裡，每個任務都派一個全新的 subagent 去做，讓每個任務都有乾淨的上下文；後者是在另一個 session 裡沒有 subagent 可派時，自己照表操課、逐項執行並在檢查點回報進度。</li><li><strong>test-driven-development（TDD）</strong>：寫任何功能或修 bug 之前用，規則是先寫測試、看著它失敗、再寫最少的程式碼讓它通過——沒看過測試真的失敗過，就不確定這個測試到底有沒有測到重點。</li><li><strong>systematic-debugging</strong>：遇到任何 bug、測試失敗或非預期行為時用，在提出修法之前，先逼自己找到根本原因，不接受「先改改看」這種對症狀下藥的修法。</li><li><strong>verification-before-completion</strong>：要宣稱工作做完、修好了、測試過了之前用，要求先真的跑過驗證指令、看過輸出結果，才准說「完成」——先有證據，才能下結論。</li></ul>
+<h2>ecc：語言別 reviewer 席次庫</h2>
+<p><code>ecc</code> 這個套件最實用的部分是一批照語言或領域分類的 reviewer agent（TypeScript、React、Python、資料庫、安全、無障礙……），在 01 章講的「語言別席」跟「條件席（安全審查）」，實際派工的時候就是從這批 agent 裡挑對應的出來用。這套件原本還帶了一大批 slash command，但目前大多數都已經停用，留下來繼續用的主要就是這批 reviewer agent。</p>
+<h2>caveman：壓縮風格與 cavecrew</h2>
+<p><code>caveman</code> 提供兩種東西：一種是對話與 subagent 輸出的壓縮風格，把回覆跟中間過程講得更精簡，省下不少 token；另一種是 <code>cavecrew</code>，裡面有三個定位明確的小 agent——<code>investigator</code>（調查/找資料）、<code>builder</code>（動手做）、<code>reviewer</code>（審查）——適合派給範圍小、獨立性高的雜務，跟 01 章那四個釘死 model 的正式 worker agent 是兩套並行的體系。</p>
+<h2>codex：外部 review 席</h2>
+<p><code>openai-codex</code> 這個套件把 Codex CLI 接進來，扮演的就是 01 章講的「outside voice」，在 Claude 系的所有審查席都跑完、finding 也修完之後，補一輪不同來源模型的意見。用途跟排隊時機已經在 <a href="#ch-01" class="xref">01-agents-cowork.md</a> 的「Codex：外部第二意見」一節講過，這裡不重複。</p>
+<h2>Claude Code 內建 skills：用到才載</h2>
+<p>除了上面 5 個 plugin 之外，Claude Code 平台本身也會隨環境提供一批內建 skills（例如發佈 Artifact 頁面、資料視覺化這類），不屬於任何一包 plugin，遇到對應需求才會載入，平常不佔任何開銷。</p>
+<h2>關了什麼、為什麼關</h2>
+<p>不是裝了的東西就要一直開著。以下是目前關掉的幾個類別，原則是同一句話：<strong>每個常駐項目都是每輪固定稅，30 天沒用到就關。</strong></p>
+<ul><li><strong>單一 CLI 動作不走 skill</strong>：一個 skill 被載入一次大概要吃掉一次對話 10–20k token 的開銷，如果要做的只是一個單純的 CLI 指令，直接下指令就好，不需要為了這一個動作去載入一整套 skill。</li><li><strong>兩個套件的大量 slash command 被搬進停用資料夾</strong>：這些套件原本帶了很多 slash command，但平常真正會用到的只有一小部分，其餘的留著也是白佔位置，已經整批搬到停用的資料夾裡。</li><li><strong>worker agent 不掛 MCP</strong>：派工用的 worker agent 本身不掛 MCP（一種讓模型連外部工具/服務的協定）的工具 schema，每一次派工大概可以省下 5k 上下的 token。</li></ul>
+<p>---</p>
+<p>延伸閱讀：這些角色跟工具具體怎麼被機械閘門強制執行，見 <a href="#ch-03" class="xref">03-hooks.md</a>；放進完整開發流程裡怎麼串起來，見 <a href="#ch-04" class="xref">04-dev-flow.md</a>。</p>
+</section>
+
+<section id="ch-03" class="chapter">
+<div class="chapter-head"><span class="eyebrow">03</span><h1>全部 Hooks 與閘門設計</h1></div>
+<p>01 章講「派給誰做」，02 章講「有哪些工具可以用」，這一章講的是「怎麼保證規則真的有被照做」。答案是：不靠自律，靠 hook——工具呼叫或 session 事件發生時自動觸發的檢查程式，能印提示、能記 log，也能直接擋下這次動作。</p>
+<h2>Hook 是什麼＋事件模型</h2>
+<p>Hook 掛在幾個固定的事件點上，各自的時機跟「能不能擋」不一樣：</p>
+<ul><li><strong>SessionStart</strong>：一個新 session 剛開始時跑一次，可以在對話正式開始前塞一段提示文字進去，但擋不住 session 啟動本身。</li><li><strong>UserPromptSubmit</strong>：使用者送出一則訊息的當下跑，一樣只能加提示，擋不住送出這個動作。</li><li><strong>PreToolUse</strong>：AI 要呼叫某個工具（Bash、Edit、Write、Agent……）之前跑，<strong>能</strong>直接擋下這次呼叫——這是唯一「事前攔截」的事件，機械閘門大多掛在這裡。</li><li><strong>PostToolUse</strong>：工具呼叫執行完之後跑，通常用來記錄或補做後續動作；技術上也能印訊息影響下一步，但這一章列的 PostToolUse hook 全部是「純記錄／純提醒」，不擋事。</li><li><strong>Stop</strong>：AI 這一輪要結束、準備把控制權交還使用者的時候跑，<strong>能</strong>擋住「結束」這個動作本身，逼它在同一輪裡繼續講下去（例如逼它先把交接 prompt 寫完再停）。</li></ul>
+<h2>兩層架構</h2>
+<p>Hook 分兩層登記，行為跟著登記的地方走：</p>
+<ul><li><strong>user 層</strong>：裝在使用者帳號底下，跟著人走，所有 repo 通用。不管在哪個專案開 session，這層的 hook 都會生效。</li><li><strong>repo 層</strong>：裝在某個專案自己的 <code>.claude/</code> 底下，只對那個專案生效，跟著專案走。範例裡的主要開發專案叫 <code>demo-app</code>，它的 repo 層 hook 就放在 <code>demo-app/.claude/hooks/</code>。</li></ul>
+<p>兩層 hook 各自需要記狀態的時候（例如「這個批次做到哪了」「這個 PR 收尾了沒」），狀態檔存在<strong>那個 repo 自己的</strong> <code>.claude/logs/</code> 底下——所以不同 repo 的批次、收尾進度互不干擾，一個 repo 的閘門狀態不會誤判成另一個 repo 的。</p>
+<h2>總表</h2>
+<p>下表列出目前<strong>已註冊</strong>的全部 hook（以下三份 settings 為準——user 層一份、demo-app repo 層一份、dev-kb repo 層一份；未註冊的檔案即使放在 hooks 資料夾裡也不列入）：第一欄是註冊指令的檔名去掉副檔名，同一支 hook 掛在多個事件上只算一列。層級欄一律只填 <code>user</code> 或 <code>repo</code>；<code>block-git-add-all</code> 這一列雖然也是 <code>repo</code>，但掛的是 dev-kb 這個 repo 自己（其餘標 <code>repo</code> 的列都是 demo-app）。</p>
+<div class="table-wrap"><table><thead><tr><th>名稱</th><th>層級</th><th>事件</th><th>解決什麼問題</th><th>擋什麼／放什麼</th><th>逃生門</th></tr></thead><tbody><tr><td><code>context-handoff-gate</code></td><td>user</td><td>Stop</td><td>context（模型一次能讀進去的對話與檔案內容量）用超過門檻卻沒收尾就繼續做事</td><td>45%／60%／75% 三段門檻到了就擋，逼收尾＋寫完整交接 prompt；沒到門檻或已驗證合格就放行</td><td>驗證重試有上限，超過就自動放行，不會把 session 鎖死</td></tr><tr><td><code>wf-continue-gate</code></td><td>user</td><td>Stop</td><td>整批工作交下去，做完一顆就停下來問要不要繼續</td><td>隊列還有工作就擋、逼接下一顆；隊列空、全部 held、或 context 過門檻就放行</td><td><code>clear</code>／<code>hold</code>／<code>set --force</code>／<code>set --merge</code>，都是使用者或執行者主動可下的指令</td></tr><tr><td><code>send-file-cleanup</code></td><td>user</td><td>PostToolUse</td><td>傳給使用者的暫存檔留在磁碟上一直堆積</td><td>只清 scratchpad 目錄底下已經成功送出的檔案，repo 裡的檔案完全不動</td><td>不適用（純清理，不擋任何動作）</td></tr><tr><td><code>wf-worktree-seed</code></td><td>user</td><td>PostToolUse</td><td>新開的 worktree 缺 gitignored 的必需檔（env、規則檔）造成安靜失敗</td><td>偵測到開新 worktree 就自動補拷清單上的檔案；已存在的檔案不覆蓋</td><td>不適用（不擋，補拷失敗只留一行提示）</td></tr><tr><td><code>herdr-agent-state</code></td><td>user</td><td>SessionStart</td><td>外部面板工具（herdr）不知道這個 session 對應哪個面板</td><td>回報 session 身分給 herdr；非 herdr 環境直接跳過</td><td>不適用（純回報，不擋）</td></tr><tr><td><code>ecc-slim-guard</code></td><td>user</td><td>SessionStart</td><td>plugin 升級會把手動精簡過的 agent／skill 清單還原成完整版，每個 session 都多付 token</td><td>只比對數量、印一行警告，不擋任何動作</td><td>不適用（不擋）</td></tr><tr><td><code>sendmessage-liveness-gate</code></td><td>user</td><td>PreToolUse</td><td>發訊息給從沒對話過的殭屍 session，白白喚醒燒 token</td><td>目標名稱符合「沒對話過」的命名特徵就擋</td><td><code>allow "&lt;name&gt;"</code> 一次性放行；10 分鐘內重送同名自動通過；驗證過的名字 7 天內不再擋</td></tr><tr><td><code>wf-closeout</code></td><td>repo</td><td>SessionStart＋PostToolUse＋Stop</td><td>merge 完的收尾（branch 清理、memory 更新、Gate B 回報）漏做</td><td>merge 後先確認真的 merged 才記待辦；下次 Stop 逐項核對，缺項就擋（上限 2 次）；SessionStart 把沒收尾完的提醒交給下一個 session</td><td>擋滿 2 次自動釋放，改成留一行提醒給下一個 session 接手</td></tr><tr><td><code>reminder-echoes</code>（多筆提醒文字）</td><td>repo</td><td>SessionStart＋UserPromptSubmit</td><td>規則寫在文件裡容易被忘記</td><td>純文字提醒，不擋任何動作</td><td>不適用</td></tr><tr><td><code>kb-session-inject</code></td><td>repo</td><td>SessionStart</td><td>每個新 session 都要重新解釋一次 dev-kb 現況</td><td>依 session 所在目錄對應到 dev-kb 的專案，注入該專案 <code>hot.md</code> 的摘要內容</td><td>不適用（讀不到就安靜跳過，不擋）</td></tr><tr><td><code>enforce-model-pin</code></td><td>repo</td><td>PreToolUse</td><td>派工沒帶 model 會偷偷繼承指揮官當下用的（通常較貴的）model；也要擋被封存的 model 檔次</td><td>通用型 agent 派工沒帶 <code>model=</code> 就擋；任何路徑解出的 model 是被封存的檔次也擋</td><td>補上明確 <code>model=</code>，或改派已經釘死 model 的專職 agent</td></tr><tr><td><code>agent-dispatch-log</code></td><td>repo</td><td>PreToolUse＋PostToolUse</td><td>派工紀錄沒留下，事後很難查是誰在什麼時候派了什麼</td><td>派工前後各記一行 log，並回報最近一個 subagent 的 context 用量</td><td>不適用（純記錄，不擋）</td></tr><tr><td><code>wf-dep-gate</code></td><td>repo</td><td>PreToolUse</td><td>新套件沒經過討論就直接被裝進 <code>package.json</code></td><td><code>package.json</code> 出現全新的頂層套件名稱就擋（版本升級／移除／lockfile 改動不受影響）</td><td>使用者核准後執行 <code>approve-dep &lt;name&gt;</code>；或一次性 <code>override dep &lt;name&gt; "&lt;理由&gt;"</code></td></tr><tr><td><code>memory-size-guard</code></td><td>repo</td><td>PreToolUse</td><td>常駐記憶檔案（MEMORY.md／CLAUDE.md）越改越大，每個 session 都要多付一次 token</td><td>模擬編輯後的檔案大小，超過門檻就擋這次寫入</td><td>一次性 <code>override memory "&lt;理由&gt;"</code></td></tr><tr><td><code>wf-merge-gate</code></td><td>repo</td><td>PreToolUse</td><td>沒走完 Ship Gate 流程（單測、runtime verify、review）就直接 merge</td><td><code>gh pr merge</code> 前檢查該 commit 是否同時有「Ship Gate 綠燈」與「Gate B 已回報」兩個標記，缺一就擋；通過後把 merge／deploy／verify 這段序列化，同一時間只放一個 session 進去</td><td>一次性 <code>override merge "&lt;理由&gt;"</code>（留稽核紀錄）</td></tr><tr><td><code>wf-worktree-cap</code></td><td>repo</td><td>PreToolUse</td><td>同時開太多 worktree，或系統可用記憶體撐不住</td><td>worktree 數量已達上限（main + 2），或可用記憶體低於 4GiB，就擋開新的</td><td>先清掉一個既有 worktree，或釋放記憶體再重試（本身是資源保護，沒有另外的覆寫指令）</td></tr><tr><td><code>read-range-guard</code></td><td>repo</td><td>PreToolUse</td><td>整檔讀大檔案會把大量內容一次塞進 context，還常常是重複讀同一份</td><td>超過 50KB 又沒帶 offset／limit 的整檔讀取就擋</td><td>帶上 <code>limit</code> 參數（哪怕設很大）就能通過；圖片／PDF／筆記本這類格式本來就豁免</td></tr><tr><td><code>wf-plan-format</code></td><td>repo</td><td>PostToolUse</td><td>寫實作計畫檔漏掉必要章節</td><td>偵測到計畫檔缺章節，印一行提醒，不擋</td><td>不適用（不擋）</td></tr><tr><td><code>block-git-add-all</code></td><td>repo（dev-kb）</td><td>PreToolUse</td><td>dev-kb 是多個 session 共用同一份工作目錄，<code>git add -A</code> 這類全量指令會把別的 session 還沒 commit 的東西一起收進自己這次的 commit</td><td>偵測到 <code>-A</code>／<code>--all</code>／裸的 <code>-u</code>（沒帶路徑）／<code>.</code> 這類「全部加進去」的寫法就擋；指定明確路徑的 <code>git add</code> 完全不受影響</td><td>不適用（沒有覆寫指令，只能改成明確列出要加的路徑）</td></tr></tbody></table></div>
+<h2>閘門級專節</h2>
+<h3><code>wf-continue-gate</code>（Stop）</h3>
+<p>使用者一次交付一整批工作（例如「PR-2 做到 PR-5」）時，做完一顆就停下來問「要繼續嗎」是這支 hook 要擋的行為——批次一旦登記，做完一顆該自己接下一顆，不是每顆都停下來等指令。</p>
+<p>批次用 <code>set</code> 登記一次（<code>wf-continue-gate.py set PR-3 PR-2 PR-5 --note "..."</code>），之後 <code>done</code> 表示某一顆真的做完、<code>hold</code> 把暫時卡住（等別的 session、等外部訊號）的項目移出隊列但不算完成、<code>unhold</code> 放回去、<code>clear</code> 表示整批結束。狀態存在該 repo 自己的目錄下，一個 repo 的批次不會影響另一個 repo。</p>
+<p>批次沒有指定由哪個 session 執行——第一個在 context 門檻以下看到它的 Stop 事件就會「認領」，之後只有認領的那個 session 會被這支 hook 追著問；認領的 session 如果超過 30 分鐘沒有動靜（用它自己的對話紀錄檔更新時間判斷），下一個活躍的 session 可以接手。多個 session 平行處理同一批工作時，<code>set --held 'UNIT=REASON'</code> 可以在登記當下就把別人正在做的項目標成 held，避免每個 session 都搶著認領同一項。</p>
+<p>一旦這個 session 的 context 用量到了收尾門檻，這支 hook 就不再逼著開新工作——把場子讓給 <code>context-handoff-gate</code>。（量 context 用量這件事本身外包給另一支共用腳本，見下面 <code>context-handoff-gate</code> 專節；快照放在 <code>files/scripts/context-check.py</code>。）</p>
+<div class="diagram"><pre class="mermaid">%%{init: {"theme":"neutral"}}%%
+stateDiagram-v2
+    [*] --&gt; Registered: set
+    Registered --&gt; Claimed: 第一個 Stop（context 門檻內）
+    Claimed --&gt; Working: 隊列非空
+    Working --&gt; Working: done 一顆&lt;br/&gt;自動接下一顆
+    Working --&gt; Held: hold
+    Held --&gt; Working: unhold
+    Working --&gt; Empty: 隊列清空
+    Empty --&gt; [*]: clear
+    Claimed --&gt; HandoffOnly: context 過門檻
+    HandoffOnly --&gt; [*]</pre><p class="diagram-caption">圖（mermaid）</p></div>
+<h3><code>context-handoff-gate</code>（Stop）</h3>
+<p>這支 hook 管的是「context 用量太高卻還在硬撐」的情境，把使用者的常任規則變成機械強制：context 用量分三段門檻——45%、60%、75%，各自在整個 session 裡最多逼一次。</p>
+<p>45% 這一段只在<strong>批次工作的邊界</strong>上才會逼（一顆工作剛做完，或根本沒有批次在跑），所以正在做的那一顆不會被腰斬；60% 跟 75% 則是不管有沒有批次、直接逼。逼出來的要求固定三件事：不再開新工作、把手上的收尾做完（branch 清掉、dev-kb 卡片與 timeline、MEMORY.md 一行）、寫一份完整的交接 prompt。</p>
+<p>這支跟 <code>wf-continue-gate</code> 兩支 Stop hook 量 context 百分比用的是同一支共用腳本（<code>~/.claude/scripts/context-check.py</code>，快照在 <code>files/scripts/context-check.py</code>）——沒拷它，兩支 hook 讀不到用量，會一路安靜地判定「還沒到門檻」直接放行，不會報錯也不會擋，等於這條規則整個失效。</p>
+<p>交接 prompt 有明確的完整性驗證：必須是單一個 code block，裡面要涵蓋五個要素（出了什麼／下一顆是什麼／要先讀什麼／哪些決策已鎖定不准重談／<code>wf-continue-gate</code> 的批次登記行或「批次已空」）裡至少四個，少於四個會被判不合格、擋著重寫，但重試有上限，超過上限就放行，避免把 session 卡死在無限重寫交接 prompt 的迴圈裡。</p>
+<div class="diagram"><pre class="mermaid">%%{init: {"theme":"neutral"}}%%
+stateDiagram-v2
+    [*] --&gt; Below45: pct &lt; 45%
+    Below45 --&gt; Band45: pct&gt;=45%&lt;br/&gt;且批次邊界
+    Band45 --&gt; Band60: pct&gt;=60%
+    Band60 --&gt; Band75: pct&gt;=75%
+    Band45 --&gt; Validating: 交出交接 prompt
+    Band60 --&gt; Validating
+    Band75 --&gt; Validating
+    Validating --&gt; Silent: 五要素驗證通過
+    Validating --&gt; Validating: 不合格，重寫&lt;br/&gt;（重試有上限）
+    Silent --&gt; [*]</pre><p class="diagram-caption">圖（mermaid）</p></div>
+<h3><code>enforce-model-pin</code>（PreToolUse）</h3>
+<p>01 章講過：一個沒有在自己定義檔裡釘死 model 的通用型 agent，派工的時候不明講要用哪個 model，就會直接繼承指揮官當下正在用的那個模型——很多時候那是最貴的一檔，拿去做列目錄這種小事就是純浪費。這支 hook 把「派工要不要釘 model」從自律變成機械擋。</p>
+<p>規則很直接：Agent 派工如果指定的是通用型 agent（沒有自帶 model 定義）又沒有帶 <code>model=</code> 參數，直接擋下這次呼叫，訊息裡附上該派哪個檔次（唯讀查找用 Haiku、機械改動用 <code>fast-worker</code>／Sonnet、需要深度推理或邊界敏感就派 <code>deep-reasoner</code>）。除此之外，這支 hook 還多扛了一條規則：某個特定的最新旗艦 model 檔次被使用者判定太貴、暫時封存，任何路徑（不管是直接指名，還是透過某個 agent 定義檔的預設 pin）解析出來會落在這個被封存的檔次上，一律擋下，訊息附上合法的替代方案。這條解析是動態讀 agent 定義檔，不是寫死清單，所以新裝的 agent 也自動受這條規則約束。任何解析失敗都直接放行——一支擋派工的閘門絕不能因為自己的 bug 讓整個 session 動不了。</p>
+<h3><code>wf-merge-gate</code>（PreToolUse）</h3>
+<p>Merge 前的最後一道機械檢查：偵測到 <code>gh pr merge</code> 這類指令，先把要 merge 的 PR 目前指向的 commit 解出來，然後查兩個標記是不是都存在——「Ship Gate 全部跑綠燈」跟「Gate B 收尾回報已經寫過」。這兩個標記都是綁在<strong>那一顆確切的 commit</strong> 上的，多推一次新 commit 兩個標記就自動失效，逼著重新走一次流程，不會有「用舊的綠燈矇混新的改動」這種情況。</p>
+<p>兩個標記缺哪個，錯誤訊息就直接告訴要跑哪個指令去補；沒有 PR、<code>gh</code> 沒登入、或查詢失敗這類「根本查不到 sha」的狀況也一律當作沒通過，擋下來要求先排除障礙。標記都通過之後，還會把 merge／deploy／verify 這一段收尾流程用一把鎖序列化——同一時間只有一個 session 能走這段，避免兩個 session 同時 merge 的動作互相干擾。</p>
+<p>逃生門是一次性、帶稽核紀錄的 <code>override merge "&lt;理由&gt;"</code>，設計原則是「絕對不能出現使用者被自己的閘門鎖死、走不下去」的死局，但每一次動用都留痕，方便事後回頭檢視是不是常態化在繞過流程。</p>
+<h3><code>wf-dep-gate</code>（PreToolUse）</h3>
+<p>新套件裝進專案之前要過一輪討論（授權、維護狀況、使用量、有沒有替代方案、<code>npm audit</code> 有沒有已知漏洞）是 CLAUDE.md 裡的常任規則，這支 hook 是它的機械後盾。</p>
+<p>判斷只鎖定 <code>package.json</code> 裡真的<strong>新增</strong>的頂層套件名稱：版本升級、移除套件、改動 lockfile、改動其他檔案都不會觸發。偵測到全新套件名稱又沒有核准紀錄，直接擋下這次寫入，訊息裡附上該走的討論流程跟核准指令。使用者同意之後執行 <code>approve-dep &lt;name&gt;</code> 留下核准紀錄，之後同一個套件的寫入就會放行；真的需要跳過討論流程的場合，也有一次性、帶稽核紀錄的 <code>override dep &lt;name&gt; "&lt;理由&gt;"</code> 可用。判斷失敗（讀不到磁碟上的原始檔、JSON 解析不出來）一律放行——這是一道紀律輔助，不是安全邊界，不能因為判斷不出來就把合法的編輯卡死。</p>
+<h3><code>wf-worktree-cap</code>（PreToolUse）</h3>
+<p>平行開發用 git worktree（同一個 repo 開出多份獨立工作目錄）很方便，但每個 worktree 都吃磁碟、吃記憶體，開太多會把本機資源榨乾。這支 hook 是資源守則的機械版：偵測到新開 worktree 的動作（不管是直接下 <code>git worktree add</code>、還是透過內建的 worktree 工具），先數一下目前已經有幾個 worktree，達到上限（主目錄再加兩個）就擋；就算數量沒超，如果系統可用記憶體已經低於門檻，也照樣擋，理由是「就算現在開得成，之後跑起測試或編譯照樣會卡死」。</p>
+<p>沒有另外設計覆寫指令——這條是資源保護，不是流程紀律，繞過去只會讓本機真的撐不住，所以擋下時給的建議永遠是「先把某個既有 worktree 清掉」或「先把佔記憶體的工作停掉」，而不是給一個能無視資源上限硬闖的按鈕。判斷不出目前有幾個 worktree（例如 git 指令本身失敗）一律放行，避免這支保護資源的 hook 反過來變成擋死一切操作的地雷。</p>
+<h3><code>wf-closeout</code>（多事件）</h3>
+<p>PR merge 之後常見的漏收尾——feature branch 沒刪、dev-kb 卡片沒更新、MEMORY.md 沒補一行——這支 hook 掛在三個事件上，把整個收尾流程串起來機械檢查。</p>
+<p>Merge 動作跑完之後（PostToolUse），先去查這個 PR 是不是<strong>真的</strong>進入了 merged 狀態（不能只看指令的結束代碼，有些 merge 模式即使沒真的合併也會回傳成功），確認是才記一筆「待收尾」。下一次要結束這一輪（Stop）時，逐項核對：feature branch 是否已刪、有沒有殘留的 worktree、記憶體檔案是否在 merge 之後真的被動過、Gate B 的收尾回報標記是否存在——任何一項沒過就擋，訊息附上每一項缺什麼、該下什麼指令補。擋滿 2 次之後自動放行，改成把待辦事項留給下一個 session 接手，並在它的 SessionStart 主動提醒——避免收尾這件事在同一個 session 裡無限迴圈卡死，但也不讓它悄悄被遺忘。</p>
+<p>多個 session 共用同一個 repo 時，這支 hook 只會擋<strong>真正執行那次 merge 的 session</strong>，不會誤把收尾義務推給旁邊剛好在同一個 repo 工作的其他 session；判斷對方是否還活著，看的是它自己的對話紀錄檔多久沒更新。</p>
+<div class="diagram"><pre class="mermaid">%%{init: {"theme":"neutral"}}%%
+stateDiagram-v2
+    [*] --&gt; Pending: merge 確認完成
+    Pending --&gt; Checking: 下一次 Stop
+    Checking --&gt; Blocked: 缺項存在&lt;br/&gt;（branch/memory/Gate B）
+    Blocked --&gt; Checking: 補做後下一次 Stop
+    Blocked --&gt; Released: 已擋滿 2 次
+    Checking --&gt; Cleared: 全部通過
+    Released --&gt; [*]: 留提醒給下一個 session
+    Cleared --&gt; [*]</pre><p class="diagram-caption">圖（mermaid）</p></div>
+<h3><code>wf-worktree-seed</code>（PostToolUse）</h3>
+<p>一個新開的 git worktree 預設只帶 tracked（有進版本控制）的檔案，但這套環境有一堆刻意 gitignore 掉的東西是跑起來必須要有的——例如環境變數檔、專案規則檔、hook 本身。少了這些不會馬上報錯，而是<strong>安靜地失敗</strong>：少了環境變數檔，需要真資料庫的測試會被跳過而不是失敗，測試報告照樣是綠的；少了規則檔，在那個 worktree 裡工作的 agent 完全不知道專案有哪些規則要遵守。</p>
+<p>這支 hook 偵測到開新 worktree 的動作，就自動把一份清單上的檔案從主目錄拷貝過去。清單分兩部分：一份固定的預設清單（env 檔、CLAUDE.md、<code>.claude/</code> 底下的 hooks／agents／notes／workflows），加上每個專案自己可以在 <code>.claude/worktree-seed.json</code> 裡追加或排除的項目。拷貝規則是單向、且絕不覆蓋——worktree 裡如果已經有一份同名檔案（例如它自己特意配置的 env），視為那份是刻意的，不會被主目錄的版本蓋掉。</p>
+<h3><code>sendmessage-liveness-gate</code>（PreToolUse）</h3>
+<p>多 session 協作常常需要用內部訊息機制知會另一個 session，但如果目標其實是一個從沒開始過對話、或者早就死掉的殭屍 session，發過去就是白白把它喚醒、燒一輪 token 卻沒有任何實質內容。這支 hook 專門攔這種情況。</p>
+<p>判斷靠的是命名特徵，不是查一份完整名單：一個真的有過對話的 session，名字會是根據對話內容自動摘要出來的一句話，不會跟三種「還沒開始對話」的自動命名長相撞——由 repo 名稱加短亂碼組成的（例如 <code>demo-app-d6</code>）、桌面殭屍寵物名（<code>desktop-xxxx-twinkly-swan</code> 這種）、或者還沒被重新命名過的初始名稱（<code>demo-app-20260810-2</code> 這種「專案-日期-序號」形狀）。符合任一種形狀就擋，並附上改用 <code>ListAgents</code> 挑一個真的有對話紀錄的 session、或確認目標真實存在後手動放行的指令。</p>
+<p>放行機制分兩層：一次性的 <code>allow "&lt;name&gt;"</code> 只保 10 分鐘；同一個目標在 10 分鐘內被擋過又重送一次，視為「已經看過理由、還是堅持要發」，自動放行一次，並且把這個名字記成「已驗證過」，7 天內都不用再過這道關。這是省 token 的提醒，不是安全邊界，任何解析不出來的畸形輸入一律放行。</p>
+<h3>dev-kb 互撞防護組</h3>
+<p>dev-kb 是多個 session 共用同一份工作目錄的知識庫，所以「兩個 session 同時搶同一個資源」在這裡是真實會發生的風險，防護分散在三個地方，合起來才是完整的一套：</p>
+<ul><li><strong>卡號原子佔用</strong>：新開一張卡片的 CLI 工具不是「先列出目前最大的卡號、自己加一」——這個做法在兩個 session 同時執行時，兩邊很可能算出同一個號碼，各自寫出一張同號的卡片，其中一張會悄悄蓋掉另一張。工具改成直接靠檔案系統本身的「獨佔建立」語意去搶號：兩個 process 同時搶同一個號碼，作業系統保證只有一個會成功，另一個會拿到明確的失敗、自動重試下一個號碼，不會有靜默覆蓋。</li><li><strong>gate 設定防互蓋</strong>：<code>wf-continue-gate</code> 的批次登記（<code>set</code>）如果偵測到同一個 repo 底下已經有另一個活躍 session 登記的、不是自己這批的非空批次，會直接拒絕，而不是整批覆蓋過去；需要真的合併或蓋過去，要走前面提到的 <code>--merge</code> 或 <code>--force</code>，明確表態才會發生。</li><li><strong>closeout 查持有者活性</strong>：<code>wf-closeout</code> 判斷一個收尾標記是不是還「有主」，看的是登記那個標記的 session 自己的對話紀錄檔有沒有還在更新，而不是單純看標記寫入的時間——避免把一個正在忙、只是暫時沒動作的 session 誤判成死掉，把它的收尾工作搶過來做一半。</li><li>加上總表裡已經列出的 <code>block-git-add-all</code>——擋掉會把別的 session 未 commit 的東西一起收進來的全量 <code>git add</code>。</li></ul>
+<p>這四件合在一起，處理的是「兩個 session 同時碰同一份共用狀態」這一類問題，跟前面各支 hook 各自看守一個獨立資源（一個 repo 的批次、一次 merge、一次派工）是同一個機械強制的邏輯，只是把範圍限定在 dev-kb 這個共用工作目錄本身。</p>
+<h2>逃生門總覽</h2>
+<p>每一支會真的擋事的 hook，只要合理就留一條逃生門，而且每一次動用都留稽核紀錄——原則只有一句：<strong>絕對不能出現使用者被自己裝的閘門鎖死、走不下去的死局</strong>。</p>
+<p>逃生門大致分三種形狀：一次性、帶理由、留痕的 override（<code>wf-merge-gate</code>／<code>wf-dep-gate</code>／<code>memory-size-guard</code>）；核准後長期生效的白名單（<code>wf-dep-gate</code> 的 <code>approve-dep</code>）；還有沒有明說覆寫指令、但擋下時直接告訴該做什麼才能通過的（<code>wf-worktree-cap</code>、<code>enforce-model-pin</code>）。至於純提醒／純記錄類的 hook（<code>ecc-slim-guard</code>、<code>wf-plan-format</code>、<code>agent-dispatch-log</code>、<code>reminder-echoes</code>……），本來就不擋任何動作，自然也不需要逃生門。</p>
+<p>---</p>
+<p>延伸閱讀：這些閘門在完整開發流程裡分別卡在哪個環節、多 session 協作時怎麼互相配合，見 <a href="#ch-04" class="xref">04-dev-flow.md</a>；dev-kb 本身的資料結構與工具指令，見 <a href="#ch-05" class="xref">05-dev-kb.md</a>。</p>
+</section>
+
+<section id="ch-04" class="chapter">
+<div class="chapter-head"><span class="eyebrow">04</span><h1>完整開發流程與多 Session</h1></div>
+<p>前三章分別講清楚「派給誰做」（01）、「手上有什麼工具」（02）、「怎麼機械擋下不照規則的動作」（03）。這一章把三者串成一條完整流程：一個需求從冒出來到出貨、收尾，中間會經過哪幾個固定階段，每個階段又會被哪支 hook 攔一次。</p>
+<p>這一章定版的階段名稱——<strong>brainstorm／spec／plan／開卡／實作／Ship Gate／收尾</strong>——後面章節會直接沿用，不再重新定義。</p>
+<h2>流程總覽（生命週期）</h2>
+<p>一個需求進來之後，固定走這幾個階段：</p>
+<ul><li><strong>brainstorm（逐題拍板）</strong>：動手寫任何東西之前，先透過一次問一個問題的方式把需求跟設計釐清，直到使用者對設計點頭同意為止，擋住「想法還沒想清楚就開始寫」。</li><li><strong>spec</strong>：把 brainstorm 拍板的結論寫成一份規格文件，作為後面 plan 拆任務的依據。</li><li><strong>plan</strong>：把 spec 拆解成一個一個具體、就算換一個完全不熟這個專案的人也能照做的任務。plan 檔有一條固定樣板規則：Phase 清單裡「Implement」跟「Ship」之間一定要有一個明確寫出來的「Review Gate」phase，沒有就算這份計畫破損，實作前得先補上。機械上目前只有 <code>wf-plan-format</code> 這支 hook 幫忙提醒缺章節，本身不擋——真正的把關落在下一步「開卡」跟「實作」前的自我核對。</li><li><strong>開卡</strong>：需求跟計畫都定案之後，才正式在知識庫裡開一張卡片，作為這個工作單位從頭到尾的追蹤單位。開卡走專門的 CLI 指令，靠檔案系統本身的獨佔建立語意搶卡號，不是「看目前最大號碼＋1」——這件事在多 session 平行開發那一節會再細講。</li><li><strong>實作（TDD）</strong>：照著 plan 上的任務逐一派工，遵守先寫測試、看它失敗、再寫最少的程式碼讓它通過的節奏。派工的時候要嘛用專職 agent，要嘛用通用型 agent 但一定要明講 model，否則會被 <code>enforce-model-pin</code> 擋下；要加新套件得先過討論，否則 <code>wf-dep-gate</code> 會擋住寫入；開新的 worktree 數量或本機資源撐不住會被 <code>wf-worktree-cap</code> 擋，開成功的新 worktree 則會被 <code>wf-worktree-seed</code> 自動補齊沒進版本控制、但跑起來必需的檔案。</li><li><strong>Ship Gate</strong>：出貨前最後一關，內容較多，獨立成下一節細講。</li><li><strong>merge</strong>：Ship Gate 全部通過之後才能合併，<code>wf-merge-gate</code> 會在合併前核對兩個跟這顆 commit 綁定的標記是否都存在，缺一就擋。</li><li><strong>收尾</strong>：merge 完的同一個動作裡，把 feature branch 刪掉、知識庫卡片關閉、memory 檔案補一行。<code>wf-closeout</code> 會在下一次要結束這一輪的時候逐項核對這些收尾動作是不是真的做了，缺項就擋，最多擋兩次，擋滿就把待辦事項留給下一個 session。</li></ul>
+<div class="diagram"><pre class="mermaid">%%{init: {"theme":"neutral"}}%%
+graph TD
+    Req[需求] --&gt; BS["brainstorm&lt;br/&gt;逐題拍板"]
+    BS --&gt; Spec[spec]
+    Spec --&gt; Plan["plan&lt;br/&gt;含 Review Gate phase"]
+    PlanFmt[["wf-plan-format&lt;br/&gt;缺章節提醒"]] -.-&gt; Plan
+    Plan --&gt; Card[開卡]
+    Card --&gt; Impl["實作&lt;br/&gt;TDD"]
+    ModelPin[["enforce-model-pin&lt;br/&gt;派工沒帶 model 就擋"]] -.-&gt; Impl
+    DepGate[["wf-dep-gate&lt;br/&gt;新套件沒核准就擋"]] -.-&gt; Impl
+    WTCap[["wf-worktree-cap&lt;br/&gt;資源不夠就擋"]] -.-&gt; Impl
+    Impl --&gt; ShipGate["Ship Gate&lt;br/&gt;詳見下圖"]
+    ShipGate --&gt; Merge[merge]
+    MergeGate[["wf-merge-gate&lt;br/&gt;缺標記就擋"]] -.-&gt; Merge
+    Merge --&gt; Closeout["收尾&lt;br/&gt;branch 清理 + memory + 關卡"]
+    CloseoutHook[["wf-closeout&lt;br/&gt;缺項就擋"]] -.-&gt; Closeout
+    Closeout --&gt; NextCheck{"批次還有下一顆？"}
+    ContinueGate[["wf-continue-gate&lt;br/&gt;逼接下一顆"]] -.-&gt; NextCheck
+    NextCheck --&gt;|有，且 context 未過門檻| Card
+    NextCheck --&gt;|沒有，或 context 過門檻| Handoff["交還使用者&lt;br/&gt;寫交接 prompt"]
+    HandoffGate[["context-handoff-gate&lt;br/&gt;逼寫交接 prompt"]] -.-&gt; Handoff</pre><p class="diagram-caption">圖（mermaid）</p></div>
+<p>圖上兩個環是有意設計的：一是「批次還有下一顆」會繞回開卡，做完一顆自動接下一顆，不是每顆都停下來問要不要繼續；二是 context 用量到門檻時，不管批次還有沒有剩，都會被 <code>context-handoff-gate</code> 逼出來收尾。這兩支 hook 的完整狀態機在 <a href="#ch-03" class="xref">03-hooks.md</a> 已經講過，這裡只標它們卡在流程的哪個節點上。</p>
+<h2>Ship Gate 詳解</h2>
+<p>Ship Gate 不是一個單一動作，而是一串固定順序的檢查，任何一步沒過都不能往下走：</p>
+<div class="diagram"><pre class="mermaid">%%{init: {"theme":"neutral"}}%%
+graph TD
+    T["測試全綠"] --&gt; RV["runtime verify&lt;br/&gt;執行路徑改動才開真實 artifact"]
+    RV --&gt; MG["機械 gate script"]
+    MG --&gt; RW["Claude review wave&lt;br/&gt;對抗席 + 語言別席 + design pass + 條件席"]
+    DispatchLog[["agent-dispatch-log&lt;br/&gt;記派工"]] -.-&gt; RW
+    RW --&gt; Fix["findings 一批修"]
+    Fix --&gt; CHCheck{"有 Critical / High？"}
+    CHCheck --&gt;|有| Confirm["fresh confirm&lt;br/&gt;只派一次"]
+    CHCheck --&gt;|沒有| Outside
+    Confirm --&gt; Outside["outside voice&lt;br/&gt;Codex，最多兩輪"]
+    Outside --&gt; Triage["findings 處置"]
+    Triage --&gt;|C/H 還沒清空| Fix
+    Triage --&gt;|C/H 已清空，MED/LOW 指定歸屬| MergeStep["merge"]
+    MergeGate2[["wf-merge-gate&lt;br/&gt;缺標記就擋"]] -.-&gt; MergeStep
+    MergeStep --&gt; Cleanup["branch 清理 + memory／dev-kb 更新"]
+    CloseoutHook2[["wf-closeout&lt;br/&gt;逐項核對"]] -.-&gt; Cleanup</pre><p class="diagram-caption">圖（mermaid）</p></div>
+<p>逐步說明：</p>
+<ol><li><strong>測試全綠</strong>：單元測試、既有測試套件全部跑過，這是最基本的門檻，沒過不用往下談。</li><li><strong>runtime verify</strong>：這一步只在「執行路徑」真的改動時才需要——路徑、啟動腳本、容器 entrypoint、環境變數這類東西一動，就要真的把對應的可執行產物開起來驗證，不能只看單元測試綠燈或 CI pipeline 綠燈就算數。原則很簡單：<strong>單測測的是程式邏輯，runtime verify 測的是「這包東西真的能跑起來」，兩者不能互相替代。</strong></li><li><strong>機械 gate script</strong>：一支腳本，機械核對一批跟程式碼慣例、命名、安全底線有關的規則（例如禁止硬編碼機密、SQL 一定要走參數化查詢這類），跑不過直接回報哪一項沒過。</li><li><strong>Claude review wave</strong>：01 章講過的席次一次性平行派出去，不是排隊一個一個看。固定會派對抗席（專門找這批修正生出的新缺陷）跟語言別席；UI 相關的 diff 加派 design pass；只有真的動到身分驗證、金流、機密處理才加派安全這類條件席。派工當下 <code>agent-dispatch-log</code> 會記一筆，方便事後查是誰在什麼時候被派了什麼。</li><li><strong>findings 一批修</strong>：所有審查席回報的 finding 匯總起來一次修完，不按「誰提的先修誰的」分批處理，避免漏掉席次之間互相牽連的問題。</li><li><strong>fresh confirm</strong>：只有這批 finding 裡出現 Critical 或 High 等級才需要，派一個沒做過原始審查的 agent，逐項核對「宣稱修好的東西是不是真的改在程式碼裡」，而且只派一次。整批都只是 Medium／Low 的話不派這一輪，改由修正者在回報裡自己附證據（測試證明、還原探針、grep 結果）。</li><li><strong>outside voice</strong>：Claude 系全部審查都收斂之後，才輪到一個跟主要工作用的模型不同來源的工具（示範環境用 Codex）補一輪意見，抓「自家審查因為系統性盲點看不出來」的問題。最多兩輪，第二輪只在第一輪的 finding 都修過之後才跑，跑完還有沒解決的 Critical／High 就直接修完交給 Claude 系審查席確認，不開第三輪。</li><li><strong>findings 處置</strong>：Critical／High 一定要擋住合併，修完才能繼續；Medium／Low 不擋，但每一條都要當場指定歸屬——不是後面某一顆已經排定要動同一批檔案的工作單位吃掉，就是這一批工作收尾時的專門單位吃掉，並且落一張卡片註明由哪個單位處理。只在候選清單裡寫一筆不算處置。</li><li><strong>merge</strong>：<code>wf-merge-gate</code> 核對「Ship Gate 全綠」跟「收尾回報已經寫過」這兩個標記是不是都綁在要合併的那顆確切 commit 上，缺一就擋；兩個標記都通過之後，還會把合併／部署／驗證這段收尾流程用鎖序列化，同一時間只放一個 session 進去，避免兩個 session 同時做收尾動作互相干擾。</li><li><strong>branch 清理 + memory／dev-kb 更新</strong>：合併完的同一個收尾動作裡，把 feature branch 刪掉、把這個工作單位在知識庫裡的卡片關閉、memory 檔案補一行——這三件事算同一個收尾動作，不是分開、可以先做一半再補的步驟；<code>wf-closeout</code> 在下一輪核對這些是不是真的都做了。</li></ol>
+<p>同一個工作單位如果第三輪還在修正，動手改之前先寫下來回答一題：<strong>這是補丁，還是設計問題？</strong> 兩個訊號任一成立就算設計問題——同一個缺陷換個地方又冒出來、或者每一輪修正都在多加一層協調邏輯而不是收斂。判定是設計問題就停止繼續打補丁，把已經安全的部分先出貨，另外開一個新的工作單位重新設計、寫清楚驗收條件，而不是在同一顆單位裡無限修下去。</p>
+<h2>Token 紀律：省儀式成本</h2>
+<p>Ship Gate 這一整套流程（多路 review、confirm、outside voice、合併輪詢）本身就是固定成本，跑一次就要付一次，所以真正能省的不是流程本身，而是「切成幾顆、跑幾輪」：</p>
+<ul><li><strong>一顆工作單位＝一條規則 × 它在整個 repo 的全部站點</strong>：發現一個問題要修，範圍是「這條規則」加上「這條規則在整個專案裡出現的所有地方」，一次修乾淨，不要修一半留著下次再補。找全部站點要用工具掃過整個 repo，不要憑印象人工列舉——人工列的清單幾乎一定會漏。</li><li><strong>批次收尾要在開工前就登記進追蹤系統</strong>，包含最後一顆「收尾單位」，中途冒出的次要 finding 只有兩個去處：後面某個已經登記、會碰到同一批檔案的單位，或者專門的收尾單位；只寫進候選清單不算已經處置，必須指向具體會吃掉它的那一顆。</li><li><strong>confirm 依 severity 分級派</strong>：批次修正裡真的出現 Critical／High 才派 fresh confirm 席；只有 Medium／Low 就不派，改由修正者自己附證據，後面下一輪審查再把關。</li><li><strong>審查分層 + 部署合併批次</strong>：單顆工作單位級別的驗證只驗「新行為」加上審查席特別點名的風險項，小範圍抽驗就好；累積幾個相鄰的工作單位可以先合併、暫緩推上實際環境，湊到一批再一起推、一次收斂驗證，不用每合併一次就跑一次全套驗證。</li></ul>
+<h2>收尾與交接</h2>
+<p>每一輪工作結束時，不管有沒有到 context（模型一次能讀進去的對話與檔案內容量）用量門檻，都要交出一份完整的交接 prompt，讓下一個接手的 session（不管是同一個使用者的下一輪對話，還是另一個平行的 session）不用從頭猜起。交接 prompt 至少要涵蓋這幾個要素：</p>
+<ul><li><strong>出了什麼</strong>：這一輪做完的東西是什麼。</li><li><strong>下一顆是什麼</strong>：接下來該做哪一件事。</li><li><strong>要先讀什麼</strong>：接手前該看哪些檔案或卡片才不會做錯方向。</li><li><strong>哪些決策已經鎖定</strong>：已經拍板、不用重新討論的設計選擇，避免下一輪把同一個問題又問一次。</li><li><strong>批次登記狀態</strong>：目前追蹤系統裡登記的批次還剩哪些單位，或者「批次已空」。</li></ul>
+<p><code>context-handoff-gate</code> 會機械驗證這份交接 prompt 是不是單一個完整區塊、五要素裡至少涵蓋四個，不合格就擋著要求重寫，但重試次數有上限，避免真的卡死。</p>
+<p>交接的另一半是<strong>每一條 deferred item（延後處理的項目）都要有具體的追蹤位置</strong>，不能只寫「之後再看」帶過。合格的追蹤位置是一張明確的卡片編號、一份候選清單檔案裡的一筆、或者一個 issue 連結；「這個之後會處理」這種沒有指向任何具體位置的說法，視同沒有追蹤。</p>
+<h2>多 Session 平行開發</h2>
+<p>一個人同時開好幾個 session 平行工作是常態，但平行開發最容易出的問題是兩個 session 同時碰到同一份共用狀態。這一節講什麼時候該開第二個 session、怎麼命名、以及互撞防護怎麼互相配合。</p>
+<h3>什麼時候開第二個 session</h3>
+<p>只有在兩個 session 要動的檔案完全不重疊的時候，才值得開第二個平行 session。同一批檔案要嘛排隊做，要嘛先講清楚誰負責哪一塊，不要兩個 session 同時改同一份 diff——那樣事後合併時互相踩線的成本，往往比排隊等一下還高。</p>
+<h3>naming 規則</h3>
+<p>每個 session 開起來的時候，名字用「日期＋專案＋流水號」這個固定形狀，例如 <code>demo-20260810-2</code>，代表 <code>demo-app</code> 這個專案在 2026-08-10 那天開的第二個 session。這個形狀有兩個好處：一是人一眼就看得出這是哪個專案、哪一天、第幾個平行 session；二是 03 章講過的 <code>sendmessage-liveness-gate</code> 能靠這個命名形狀識別出「這是一個自動命名、還沒真的對話過」的 session，避免誤傳訊息把殭屍 session 喚醒燒 token。</p>
+<h3>互撞防護怎麼合作</h3>
+<p>多個 session 共用同一份工作目錄（例如知識庫本身）時，防護分散在幾個地方，合起來才是完整的一套：</p>
+<ul><li><strong>卡號原子佔用</strong>：開卡片一律走專門的 CLI 工具，靠檔案系統本身的獨佔建立語意搶號碼，不是「看目前最大號碼＋1」——後者在兩個 session 同時執行時很容易算出同一個號碼，其中一張卡片會悄悄蓋掉另一張。</li><li><strong>gate 登記時把別 session 的單位標成 held</strong>：登記整批工作到追蹤系統時，如果已經知道某個單位其實是別的 session 在動，登記當下就直接標成 held，不要讓每個 session 各自搶著認領同一項工作。</li><li><strong>closeout 查持有者活性</strong>：判斷一個收尾標記是不是還「有主」，看的是登記那個標記的 session 自己的對話紀錄檔還有沒有在更新，而不是單純看寫入的時間戳——避免把一個正在忙、只是暫時沒動作的 session 誤判成已經死掉，把它的收尾工作搶過來做一半。</li><li>加上 03 章總表裡的 <code>block-git-add-all</code>：擋掉會把別的 session 還沒 commit 的東西一起收進來的全量 <code>git add</code> 指令，逼著每次都明確列出要加的路徑。</li></ul>
+<h3>herdr：session 面板管理（可替換）</h3>
+<p>示範環境裡用一個自製小工具（herdr）管理多個平行跑的 session：幫每個面板／分頁取一個看得出身分的名字、把 session 自己的身分回報給面板工具，對應到 03 章總表裡的 <code>herdr-agent-state</code>（SessionStart 時回報身分，非 herdr 環境直接跳過）。</p>
+<p>herdr 本身不是必要工具，任何能開出多個平行終端機視窗、並且幫每個視窗取一個看得出身分名稱的方式都可以替代——單純用 tmux 開多個 pane、把每個 pane 的標題手動改成看得出是哪個專案哪一天的第幾個 session，也能達到同樣效果。重點只有一個：<strong>每個平行跑的 session 都要有一個外部看得出身分的名稱</strong>，不要留一堆看不出是誰、也不知道還活不活著的殭屍視窗。</p>
+<p>---</p>
+<p>延伸閱讀：這一章用到的席次定義見 <a href="#ch-01" class="xref">01-agents-cowork.md</a>；每一支 hook 的完整規則跟逃生門見 <a href="#ch-03" class="xref">03-hooks.md</a>；開卡與知識庫本身的資料結構、CLI 指令，見 <a href="#ch-05" class="xref">05-dev-kb.md</a>。</p>
+</section>
+
+<section id="ch-05" class="chapter">
+<div class="chapter-head"><span class="eyebrow">05</span><h1>dev-kb — AI 的 Second Brain</h1></div>
+<p>01～04 章講的是「誰做事」跟「怎麼被機械擋住」。這一章講另一半：AI 對話會結束、單一 session 能塞進去的內容（context，模型一次能讀進去的對話與檔案內容量）有上限，長期累積下來的專案狀態、決策、待辦事項不可能全部留在對話裡。這些東西被搬到對話之外一套獨立的檔案型知識庫——dev-kb，每個新開的 session 都用同一套固定路由去撿回來，不用每次重新解釋一遍專案背景。</p>
+<p>dev-kb 是獨立於任何一個應用程式 repo 之外的一份 git repo，本身只放這種「會過期、會變動」的專案狀態（待辦、決策、時間軸），不是拿來寫深度技術文件的地方。</p>
+<h2>三層記憶分工</h2>
+<p>一個長期在跑的專案，知識其實分散在三個不同的地方，各自存的東西、什麼時候讀、什麼時候寫都不一樣：</p>
+<div class="table-wrap"><table><thead><tr><th>層級</th><th>存什麼</th><th>什麼時候讀</th><th>什麼時候寫</th></tr></thead><tbody><tr><td><strong>memory files</strong>（<code>~/.claude/.../memory/</code>，帳號層級，跨專案共用）</td><td>使用者的長期偏好、被糾正過的行為模式、一次性教訓的濃縮結論</td><td>每個 session 一開始，靠一份索引檔（<code>MEMORY.md</code>）自動全載入，不用另外查</td><td>只有真的發生一次值得記住的糾正或決策時才新增一條，一條規則獨立成一個檔案，避免混在一起難以個別引用</td></tr><tr><td><strong>dev-kb</strong>（這一章的主角）</td><td>單一專案的目前狀態——待辦事項、已拍板的決策、常任不重議清單、進行中批次的進度</td><td>每次要接手一個工作單位之前，走本章講的固定路由（先 <code>hot.md</code> 再 <code>index.md</code> 再開卡）</td><td>開新工作單位（開卡）、工作結案（關卡）、有新的拍板決策時</td></tr><tr><td><strong>repo 內文件</strong>（應用程式 repo 自己的 <code>LEARN.md</code>／<code>SDD.md</code> 這類檔案）</td><td>深度技術「為什麼」——架構決策的完整脈絡、設計取捨的推演過程</td><td>卡片裡有指到才讀，不會為了圖方便把整段內容複製進 dev-kb</td><td>架構決策拍板、或一個技術債的根本原因被釐清之後</td></tr></tbody></table></div>
+<p><code>memory files</code> 這一層本身也是一份「索引 + 個別檔案」的結構：索引檔裡每一行是一個指到某份 memory 檔的一句話指標，每份 memory 檔自己的 frontmatter 至少會有 <code>name</code>（一句話標題）、<code>description</code>（觸發脈絡）、<code>type</code>（例如 <code>feedback</code>／<code>reference</code>），本體才是完整說明。dev-kb 卡片的結構跟這個「先索引、再開個別檔案」的設計是同一個思路，差別只在 dev-kb 多了狀態機（open／closed 這類生命週期）跟機械 lint。</p>
+<p>三層分工的判斷原則很簡單：<strong>這件事會不會跨專案重複發生？</strong> 會的話（例如「使用者不喜歡 UI 用裝飾性 icon」）進 memory files；只跟這個專案目前的狀態有關（例如「這個功能還沒做完，卡在等另一個決策」）進 dev-kb；需要完整論證過程才講得清楚的架構決策，正文留在 repo 內文件，dev-kb 卡片只放一句話結論加指標。</p>
+<h2>資料結構</h2>
+<p>dev-kb 底下每個專案一個資料夾（例如這份手冊裡都用 <code>demo-app</code> 代稱），資料夾裡固定這幾個東西：</p>
+<ul><li><strong><code>cards/active/</code></strong>：進行中或近期關閉的卡片，一卡一事，是整個 KB 的原始資料來源。</li><li><strong><code>cards/archive/</code></strong>：關閉滿一段時間（示範環境設 30 天）的卡片被搬過來，內容逐字不變，純粹只是換位置。</li><li><strong><code>hot.md</code></strong>：「現在在忙什麼」的速覽頁，行數有硬上限（示範環境設 56 行），永遠是接手一個專案前第一個讀的檔案。</li><li><strong><code>index.md</code></strong>：全部卡片的索引，一行一張卡，行數同樣有上限（示範環境設 900 行），只拿來 grep 關鍵字，不整份讀進 context。</li><li><strong><code>timeline/&lt;year&gt;.md</code></strong>：按年份分檔的出貨時間軸，一行一個版本。</li><li><strong><code>brainstorms/&lt;topic&gt;.md</code></strong>：一個討論主題一個檔案，記錄「討論到哪裡、拍板了什麼」，行數也有上限（30 行）。</li><li><strong><code>plans/&lt;topic&gt;.md</code></strong>：批次工作（≥2 顆以上的工作單位一起規劃）用的純資料骨架，只放「有哪些問題、有哪些工作單位」，不放進度。</li><li><strong><code>html/</code></strong>：給人看的瀏覽頁，一份看板頁、一份時間軸頁、一份決策頁……都是產生出來的靜態網頁。</li></ul>
+<p>其中 <code>hot.md</code>、<code>index.md</code>、<code>timeline/&lt;year&gt;.md</code>、<code>html/</code> 底下所有東西都是<strong>產生化檔案</strong>——由 <code>tools/build.js</code> 從 <code>cards/</code>、<code>plans/</code>、<code>brainstorms/</code> 這些原始資料算出來，手動去改這些檔案是白費工夫：下一次跑 build 就會被蓋掉，而且會讓「真相到底在哪」變得混亂。</p>
+<p>上面這些行數上限、每個專案的來源路徑，全部集中設定在 dev-kb 自己根目錄下的一份 <code>config.json</code>，<code>tools/</code> 底下每支 CLI 開工前都先讀這份設定，不是寫死在程式碼裡。範例（路徑全部是佔位符，換成你自己的實際路徑）：</p>
+<pre class="code-block"><code>{
+  "archiveAfterDays": 30,
+  "hotMaxLines": 56,
+  "indexMaxLines": 900,
+  "projects": {
+    "demo-app": {
+      "repoPath": "/path/to/your-main-repo",
+      "learnPath": "/path/to/your-main-repo/LEARN.md",
+      "sddPath": "/path/to/your-main-repo/SDD.md",
+      "changelogPath": "/path/to/your-main-repo/CHANGELOG.md"
+    }
+  },
+  "mirrorPath": "/path/to/your-obsidian-vault"
+}</code></pre>
+<p><code>archiveAfterDays</code>／<code>hotMaxLines</code>／<code>indexMaxLines</code> 對應上面提到的那幾個硬上限；<code>projects</code> 是一個 map，key（範例裡的 <code>demo-app</code>）就是後面工具指令手冊裡 <code>&lt;project&gt;</code> 要填的那個專案代稱，value 底下四條路徑指到那個專案自己的 repo、<code>LEARN.md</code>、<code>SDD.md</code>（或你自己專案的架構規格文件）、<code>CHANGELOG.md</code>——沒有的欄位可以填 <code>null</code>；<code>mirrorPath</code> 是 Obsidian mirror 一節提到的鏡像輸出路徑，沒有要做鏡像同步就整條拿掉。</p>
+<div class="diagram"><pre class="mermaid">%%{init: {"theme":"neutral"}}%%
+graph LR
+    ClaimCard[["claim-card.js&lt;br/&gt;開卡"]] --&gt; Cards["cards/active/*.md"]
+    CloseCard[["close-card.js&lt;br/&gt;關卡"]] --&gt; Cards
+    PlanAdd[["plan-add.js&lt;br/&gt;登記批次"]] --&gt; Plans["plans/(topic).md"]
+    Manual["AI／人手動維護"] --&gt; Brainstorms["brainstorms/(topic).md"]
+    Cards --&gt; Build[["build.js&lt;br/&gt;lint + 產生"]]
+    Plans --&gt; Build
+    Brainstorms --&gt; Build
+    Build --&gt; Hot["hot.md"]
+    Build --&gt; Index["index.md"]
+    Build --&gt; Timeline["timeline/(year).md"]
+    Build --&gt; Html["html/*.html"]
+    Build --&gt; Archive["cards/archive/&lt;br/&gt;（關閉滿 30 天）"]
+    Build -.一份鏡像.-&gt; Obsidian["Obsidian vault&lt;br/&gt;（mirrorPath）"]</pre><p class="diagram-caption">圖（mermaid）</p></div>
+<h2>卡片生命週期</h2>
+<p>一張<strong>卡片</strong>就是一個獨立的工作單位或決策記錄，一卡一事：一個待辦項目、一個已拍板的決策、或一則單純的備忘。</p>
+<p><strong>開卡</strong>一律走 <code>claim-card</code> 這支 CLI，不是手動建立檔案。原因是兩個 session 同時各自看「目前最大卡號＋1」再各自新增檔案，很容易兩邊算出同一個號碼，其中一張會悄悄蓋掉另一張。<code>claim-card</code> 改用檔案系統本身的獨佔建立語意（exclusive file create）來搶號碼——同一個號碼只有一個 process 搶得到，搶輸的自動重試下一號，不會發生覆蓋。</p>
+<p>卡片狀態只能往前走，不能走回頭：<code>open</code> 跟 <code>in-progress</code>／<code>blocked</code> 之間可以來回，但最終只會停在 <code>closed</code>（走完、有證據）或 <code>declined</code>（拍板不做、有理由）其中一邊；要「重開」一張已經關閉的卡片，永遠是<strong>開一張新卡</strong>指回舊卡，不是把舊卡的狀態改回去重寫。</p>
+<p><strong>關卡</strong>走 <code>close-card</code>，會一次寫齊「結案版本、PR 編號、證據、一句話時間軸敘述」這幾個欄位——這些欄位就是後面 <code>timeline/&lt;year&gt;.md</code> 拿來自動產生時間軸那一行的原始資料，關卡的當下把資料寫對，時間軸頁面完全不用手工維護。</p>
+<p>卡片關閉（或拍板不做）滿一段時間之後，會被 build 自動搬去 <code>cards/archive/</code>，內容逐字不變，純粹是位置移動，方便讓 <code>cards/active/</code> 只留下真的還要盯的東西。</p>
+<p><strong>常任 NO</strong> 是這套生命週期裡一個特別的例外：有些「已經拍板不做」的決策，屬於「換一個完全不同的任務、換一個人來提，還是很可能會被重新提案」的那種類型（例如「不要加某種防呆機制」「某個命名規則已經鎖定」）。這類卡片標成常任狀態之後就不會被自動歸檔清掉，會一直留在 <code>hot.md</code> 的「常任 NO」清單裡持續曝光，直到有一張新卡明確指名要推翻它為止。目的是讓「已經說過不做」這件事對任何一個之後接手的 AI 都是看得見的，不會因為超過歸檔期限就悄悄從視野裡消失、被重新提案一次。</p>
+<h2>brainstorm 交互設計</h2>
+<p>一個需求開始討論的當下，就先建一個 <code>brainstorms/&lt;topic&gt;.md</code>，不是等定案了才回頭補文件。這個檔案的 frontmatter 只有四個欄位：<code>topic</code>（主題代稱，等於檔名）、<code>stage</code>（討論階段，依序是討論中／已拍板／實作中／完成）、<code>created</code>、<code>updated</code>。</p>
+<p>正文固定三段：<strong>Initial question</strong>（一開始要解決什麼問題，寫定之後就凍結——方向如果真的整個換了，開一個新檔案，不回頭改這一段）、<strong>Decided</strong>（逐題拍板之後把結論寫進來）、<strong>Open</strong>（還沒定案、留著繼續討論的部分）。</p>
+<p>整份檔案（含 frontmatter）有 30 行硬上限，這個上限是刻意設計的：逼你只留「討論到哪裡、拍板了什麼」的結論，長篇的論證過程跟完整設計細節逼你另外寫進一份 spec 文件，brainstorm 檔本身永遠讀得完、不會膨脹成第二份技術文件。</p>
+<p>一個虛構範例（示範環境用 <code>demo-app</code> 這個專案代稱）：</p>
+<pre class="code-block"><code>---
+topic: demo-caching-layer
+stage: decided
+created: 2026-08-10
+updated: 2026-08-10
+---
+# 要不要幫 demo-app 的清單頁加一層快取
+## Initial question
+demo-app 清單頁資料量大的時候，每次都重新查一次 DB，要不要加快取層？
+## Decided
+- 採 in-memory LRU cache，TTL 5 分鐘；卡片 demo-0042 追蹤實作。
+## Open
+- (none)</code></pre>
+<p>定案（<code>stage</code> 進到已拍板）之後接 spec／plan，工作全部做完再把 <code>stage</code> 標成完成、手動搬去 <code>brainstorms/archive/</code>。</p>
+<p>每個 brainstorm 檔還要一份同名的 <code>.zh.md</code> 中文顯示版（例如 <code>demo-caching-layer.zh.md</code>），內容一樣是 Initial question／Decided／Open 三段，給看瀏覽頁的人讀中文用；少了這份搭配檔，build 的 lint 會直接 fail，不是可有可無的附件。</p>
+<h2>plan-ledger：批次進度看板</h2>
+<p>一顆工作單位（例如一個小 bug）直接走「brainstorm → 開卡」就夠，不需要額外的 plan 檔。但一個批次規劃出<strong>兩個以上</strong>的工作單位（例如一次要拆五顆 PR 的 epic）時，開工前要先跑 <code>plan-add --init</code> 登記，建立一份 <code>plans/&lt;topic&gt;.md</code>。</p>
+<p>plan 檔本身只放兩段純資料：<strong>Problems</strong>（要解決哪些問題，各給一個編號）跟 <strong>Units</strong>（要拆成哪幾個具體工作單位，各自解決哪幾個 Problem 編號）。這份檔案不放任何進度狀態——進度永遠只活在卡片身上：<code>claim-card --plan &lt;topic&gt;/&lt;unit&gt;</code> 把一張新卡跟某個工作單位綁在一起，<code>close-card</code> 幫這張卡寫上結案版本跟 PR 編號的當下，這個工作單位在看板上就自動變成「已完成」，不需要另外手動維護一份「還剩幾顆沒做」的清單。</p>
+<p>這個設計也順手防了一個多 session 互撞的坑：如果兩個還沒結案的卡片同時認領了同一個工作單位，代表兩個 session 在同一時間重複派工做同一件事，build 檢查會直接擋下來，而不是等到兩邊都做完才發現撞工。</p>
+<p>虛構範例：</p>
+<pre class="code-block"><code>---
+topic: demo-checkout-revamp
+created: 2026-08-10
+---
+## Problems
+- P1 | Checkout flow has no progress indicator | 結帳流程沒有進度指示
+## Units
+- B1 | solves:P1 | Add step indicator component | 加上步驟指示元件
+- B2 | solves:P1 | Wire indicator into checkout state | 把指示元件接上結帳狀態機</code></pre>
+<h2>工具指令手冊</h2>
+<p>四支寫入用的 CLI，都在 <code>tools/</code> 底下（範例把真實環境用的專案代稱換成 <code>demo-app</code>；<code>&lt;project&gt;</code> 這個位置在你自己的環境裡填 <code>config.json</code> 裡設定好的專案代稱）：</p>
+<div class="table-wrap"><table><thead><tr><th>指令</th><th>範例</th><th>什麼時機跑</th></tr></thead><tbody><tr><td><code>claim-card.js</code></td><td><code>node tools/claim-card.js demo-app --title "清單頁快取失效時機不明確" --area demo-area --severity low</code></td><td>要開始一個新工作單位、或要記一則新決策，都先搶號開卡，不要手動建檔案。</td></tr><tr><td><code>close-card.js</code></td><td><code>node tools/close-card.js demo-app demo-0042 --version v1.2.3 --pr 88 --evidence "PR #88" --timeline "清單頁加上 5 分鐘 TTL 的 in-memory cache"</code></td><td>Ship Gate 通過、實際 merge 之後結案；<code>--declined "&lt;理由&gt;"</code> 則用在拍板不做的情況。</td></tr><tr><td><code>plan-add.js</code></td><td><code>node tools/plan-add.js demo-app demo-checkout-revamp --init</code></td><td>批次規劃出兩顆以上工作單位，開工前先登記一份 plan-ledger 骨架；之後用 <code>--problem</code>／<code>--unit</code>／<code>--drop</code> 陸續補資料。</td></tr><tr><td><code>build.js</code></td><td><code>node tools/build.js --check</code></td><td>任何一次卡片／plan／brainstorm 改動之後都跑一次，確認 lint 全過；真的要重新產生 <code>hot.md</code>／<code>index.md</code>／<code>html/</code> 就拿掉 <code>--check</code> 跑一次完整 build。</td></tr></tbody></table></div>
+<p>前三支寫入用的 CLI（<code>claim-card.js</code>／<code>close-card.js</code>／<code>plan-add.js</code>）都遵守同一個原則：<strong>成功寫入之後自動接著呼叫一次 <code>build.js</code></strong>，讓索引、看板、lint 結果永遠跟最新一次寫入同步，不會出現「卡片已經改了，但看板還是舊的」這種中間狀態；<code>build.js</code> 本身是被呼叫的那一端，不會再對自己重複觸發。</p>
+<h2>Obsidian mirror：給人看的瀏覽介面</h2>
+<p><code>config.json</code> 裡有一個 <code>mirrorPath</code> 設定，設定檔指到你的 Obsidian vault 路徑。每一次完整 build（非 <code>--check</code>、而且全綠）跑完之後，<code>build.js</code> 會把整個 KB（<code>.git</code> 除外）單向同步一份過去，讓你可以直接用 Obsidian 開起來瀏覽——尤其是卡片之間互相 wikilink 的關聯，用 Obsidian 的 graph view 看，會變成一張視覺化的知識網，這正是「second brain」這個定位想要的效果。</p>
+<p>這份鏡像<strong>只能看，不能改</strong>：任何在鏡像路徑上手動做的修改，下一次同步就會被覆蓋掉，永遠不會反向流回 dev-kb 本身。唯一的真相永遠只有一份，就是 dev-kb 這個 git repo 自己。</p>
+<p>---</p>
+<p>延伸閱讀：卡片跟工作單位怎麼卡進整條開發流程、Ship Gate 收尾時卡片要怎麼關，見 <a href="#ch-04" class="xref">04-dev-flow.md</a>；把這套 dev-kb 從零裝起來的分階段步驟，見 <a href="#ch-07" class="xref">07-quickstart.md</a>。</p>
+</section>
+
+<section id="ch-06" class="chapter">
+<div class="chapter-head"><span class="eyebrow">06</span><h1>通用規則手冊</h1></div>
+<p>前面幾章講的是「怎麼分工、怎麼機械擋、怎麼走流程」，這一章把貫穿在整套流程裡的具體規則收攏成一份清單。這些規則不是憑空想的，是示範環境裡真的在用、也被機械 hook 或審查流程反覆驗證過的規則，整理成可以直接照抄的格式。</p>
+<p>格式固定：每條規則是「<strong>規則本身</strong>＋一句為什麼」，不附帶背景故事。想看完整脈絡，回頭翻前面章節或章末的原始檔案快照。</p>
+<h2>溝通</h2>
+<ul><li><strong>對話用白話，讓沒摸過這段程式碼的人 5 秒懂 80%</strong>：對話是講給人聽的，不是寫給機器解析的，堆術語只會讓對方停下來反覆確認。</li><li><strong>文件、commit message、PR body 維持技術文體</strong>：白話規則只管「對話」這個場合，正式產出物該有的精確用詞不能丟，因為那些東西之後會被別人或別的工具再讀一次。</li><li><strong>回報結論先行</strong>：先講做完了什麼、有沒有問題，細節放後面，因為對方沒空從頭讀到尾才知道結果。</li><li><strong>技術 mode 用完要主動切回白話</strong>：寫完 plan、commit message、或跟另一個 agent 對話之後，下一句對話要記得切回口語，因為技術文體很容易黏著不放，變成整段對話都讀起來像文件。</li></ul>
+<h2>誠實與驗證</h2>
+<ul><li><strong>沒有真的跑起來驗證過，不能說「done」</strong>：單元測試綠燈跟「這包東西真的能開機、能跑起來」是兩件不同的事，只驗證前者會把還沒跑過的錯誤放進生產環境。</li><li><strong>回報要附證據，證據依風險分級</strong>：改動風險高的項目附測試結果或還原探針，風險低的用文字說明帶過即可，因為證據成本要跟風險對稱，不然每次回報都要花力氣寫論文。</li><li><strong>文件跟現狀衝突，先討論、更新文件，再動工</strong>：文件過期沒人發現，之後每個人都照過期文件做事，只會錯得更遠。</li><li><strong>驗證完要主動講清楚結果，並且主動提下一步方向</strong>：不要驗證完就停在原地等對方問，讓對方猜下一步是什麼。</li></ul>
+<h2>安全 baseline</h2>
+<ul><li><strong>secrets 不寫進原始碼</strong>：一律用環境變數或密鑰管理工具注入，因為一旦進了版本控制就等於外洩，就算之後刪掉，git 歷史紀錄也還留著。</li><li><strong>啟動時就檢查必要的 secret 是否存在</strong>：晚一步在執行到一半才發現少一個環境變數，代價比啟動當下就擋下來大很多。</li><li><strong>動到身分驗證、輸入處理、資料庫查詢、金流／付款、檔案系統操作、外部 API 呼叫、密碼學就加派安全審查</strong>：這幾類程式碼出錯的代價通常是資料外洩或帳號被盜，值得多一道審查成本。</li><li><strong>錯誤訊息不能洩漏敏感資料</strong>：使用者看到的錯誤訊息如果詳細到能反推系統內部結構，等於幫攻擊者省了偵查的功夫。</li><li><strong>疑似外洩的 secret 一律立刻 rotate</strong>：外洩無法證偽，換掉最便宜。</li></ul>
+<h2>Git／PR</h2>
+<ul><li><strong>commit message 固定格式 <code>&lt;type&gt;: &lt;description&gt;</code></strong>：固定格式讓機器跟人都能快速掃過歷史，不用每次猜這行在講什麼。</li><li><strong>一顆 PR 對應一條規則 × 它在整個 repo 的全部站點</strong>：修一半留著下次補，等於同一個問題要重新調查兩次，而且中間那段時間規則沒有真的生效；找全部站點要用工具掃過整個 repo，不要憑印象人工列舉。</li><li><strong>merge 完的同一個動作裡順手刪掉 feature branch</strong>：只刪已經合併過的分支，拖到之後再清，清單只會越積越長，最後沒人記得哪些其實已經合併過了。</li><li><strong>逃生門（跳過某項檢查的 flag）一律留稽核紀錄</strong>：不是想跳過就跳過，留紀錄才查得到「這次為什麼跳過」，日後回頭追蹤才有依據。</li></ul>
+<h2>Review</h2>
+<ul><li><strong>finding severity 分四級，CRITICAL 擋 merge</strong>：CRITICAL／HIGH／MEDIUM／LOW 對應不同動作——CRITICAL 一定要擋住合併，HIGH 該修，MEDIUM 看情況，LOW 隨意，等級分清楚才不會每個 finding 都用同一套流程處理，浪費審查資源在低風險項目上。</li><li><strong>findings 大約一半是誤報，動手改之前先逐條驗前提</strong>：審查工具跟 agent 都會誤判，沒驗證前提就照單全收，反而會改出新問題。</li><li><strong>reviewer 永遠新派，不是原本寫這段程式碼的人</strong>：同一個人審自己寫的東西，盲點跟寫的時候一模一樣，等於沒審。</li><li><strong>對抗席、語言別席固定排進 Review Gate</strong>：不是遇到問題才臨時加派，固定排進去才不會漏掉「這批修正本身生出新缺陷」這種只有主動去找才找得到的問題。</li></ul>
+<h2>測試</h2>
+<ul><li><strong>測試結構固定 Arrange–Act–Assert，命名描述行為而不是函式名稱</strong>：測試失敗的時候光看名稱就知道是哪個行為壞了，不用再回頭讀測試內容。</li><li><strong>新增的測試檔要確認真的被 CI 跑到</strong>：寫了測試但沒接進 pipeline 的 include 清單，等於這份測試永遠不會失敗，也永遠不會提醒任何人。</li><li><strong>mock 掉的寫入路徑不算真的驗證過</strong>：mock 只驗證呼叫有沒有發生，不驗證資料真的寫進去，拿掉 mock 才會看到真正該擋的錯誤。</li><li><strong>測試覆蓋率目標約 80%，是目標不是機械閘門</strong>：拿它當方向，不拿它當擋 merge 的硬條件。</li></ul>
+<h2>糾正機械化優先</h2>
+<ul><li><strong>使用者糾正同一個行為問題，先想能不能做成 hook 機械擋下，擋不下來才退而求其次寫進文件</strong>：文件規則會隨時間漂移，沒人保證下次還會照著讀；機械規則不會忘記自己該做什麼。</li><li><strong>同一個問題違反一次記一筆，連續違反三次就當成需要回頭找根因的重大問題</strong>：靠人一直提醒不是長久做法，反覆出現代表該換更強的防護手段。</li><li><strong>機械閘門必附逃生門，且逃生門要留 audit 紀錄</strong>：不能出現人被自己的閘門鎖死的死局，但繞過要留痕。</li></ul>
+<h2>收尾</h2>
+<ul><li><strong>每一條 deferred item 都要有具體追蹤位置</strong>：卡片編號、候選清單裡的一筆、或 issue 連結都算，「之後再看」這種說法沒有指向任何地方，等於沒追蹤。</li><li><strong>一輪工作結束一定要交出完整交接 prompt</strong>：不管有沒有到 context 用量門檻都要交，因為下一個接手的人——可能是別的 session，也可能是自己下一輪——不該從頭猜起。</li><li><strong>merge、分支清理、卡片關閉、memory 更新算同一個收尾動作</strong>：不是可以先做一半、之後再補的分開步驟，分開做很容易卡在「一半」那個狀態就被遺忘。</li></ul>
+<h2>原始檔案快照</h2>
+<p>以上規則整理自示範環境實際在用的專案規則檔。想看規則實際上是怎麼組織在一份完整設定檔裡的，可以參考 <code>files/claude-md-masked.md</code>——那是把可追溯特定組織的資訊都遮蔽過後的真實檔案快照。</p>
+<p>---</p>
+<p>延伸閱讀：席次定義見 <a href="#ch-01" class="xref">01-agents-cowork.md</a>；Ship Gate 流程細節見 <a href="#ch-04" class="xref">04-dev-flow.md</a>；下一步的分階段複刻步驟見 <a href="#ch-07" class="xref">07-quickstart.md</a>。</p>
+</section>
+
+<section id="ch-07" class="chapter">
+<div class="chapter-head"><span class="eyebrow">07</span><h1>快速上手：分階段複刻指南</h1></div>
+<p>00～06 章講的是「這套流程長什麼樣子、為什麼這樣設計」，這一章講「怎麼真的把它裝起來」。走法分五個階段，從階段 0（前置）一路疊到階段 4（多 session），每個階段都是前一階段能動之後才疊上去的一層，不建議跳著裝——例如還沒把四個 agent 裝好就先裝 Ship Gate hook，你會看到 hook 擋下派工，卻找不到它要你派的那個 agent。</p>
+<p>每個階段固定同一種格式：<strong>裝什麼</strong>（這階段要達成什麼效果）→<strong>拷哪些檔</strong>（從 <code>files/</code> 底下拷去哪裡）→<strong>改哪些路徑</strong>（拷完之後要因地制宜調整什麼）→<strong>怎麼驗證裝好了</strong>（一個具體、看得出結果的動作）。階段名稱以外的名詞（席次、Ship Gate、收尾、對抗席、confirm 席、卡片、hot、index、timeline、常任 NO……）沿用前面幾章定義過的意思，這裡不重講一次，需要回頭查就點對應章節的連結。</p>
+<p>範例路徑一律用示範代稱：你自己實際動手的專案叫 <code>demo-app</code>，你要接下來另外開的知識庫 repo 叫 <code>dev-kb</code>；換成自己的專案名稱、路徑即可。</p>
+<h2>階段 0：前置</h2>
+<p><strong>裝什麼</strong>：Claude Code CLI 本體（照官方文件安裝、登入你的帳號），加一個乾淨的 git repo 當作套用這套流程的目標專案（後面沿用 <code>demo-app</code> 代稱）；<code>python3</code>（後面幾個階段的 hook 全部是 Python script）、<code>node</code>（<code>sync.js</code>／dev-kb 的 <code>tools/</code> 都是 Node）、<code>gh</code>（GitHub CLI，階段 2 的 <code>wf-merge-gate</code> 驗證要用到）三個命令列工具。</p>
+<p><strong>拷哪些檔</strong>：這階段還沒東西好拷，先確認基礎環境到位。</p>
+<p><strong>改哪些路徑</strong>：不適用。</p>
+<p><strong>怎麼驗證裝好了</strong>：<code>claude --version</code> 印得出版本號；<code>cd</code> 進你的目標 repo 跑 <code>git status</code>，看得到正常輸出（不是「not a git repository」）；<code>python3 --version</code>、<code>node --version</code>、<code>gh --version</code> 三個都印得出版本號，<code>gh auth status</code> 顯示已登入。</p>
+<h2>階段 1：最小可用（席次先上線）</h2>
+<p><strong>裝什麼</strong>：01 章講的四個釘死 model 的 agent（<code>deep-reasoner</code>／<code>fast-worker</code>／<code>deep-reviewer</code>／<code>fast-reviewer</code>）；一份最小 <code>CLAUDE.md</code>，先只留「溝通」跟「派工」兩節規則，其餘（UI 紀律、Ship Gate、Token 紀律……）留到後面階段再逐步補回去，不要一次整份照抄。</p>
+<p><strong>拷哪些檔</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>來源（<code>files/</code>）</th><th>目的地</th></tr></thead><tbody><tr><td><code>files/agents/deep-reasoner.md</code></td><td><code>~/.claude/agents/deep-reasoner.md</code></td></tr><tr><td><code>files/agents/fast-worker.md</code></td><td><code>~/.claude/agents/fast-worker.md</code></td></tr><tr><td><code>files/agents/deep-reviewer.md</code></td><td><code>~/.claude/agents/deep-reviewer.md</code></td></tr><tr><td><code>files/agents/fast-reviewer.md</code></td><td><code>~/.claude/agents/fast-reviewer.md</code></td></tr></tbody></table></div>
+<p><code>CLAUDE.md</code> 不是整份拷，是從 <code>files/claude-md-masked.md</code> 裡節錄三段搬進你的 <code>demo-app/CLAUDE.md</code>：「🚨 HARD RULE — 對話風格白話化」＋「協作與語言規範」算「溝通」，「🚨 HARD RULE — Model Orchestration」算「派工」。其餘段落先整段刪掉，之後每進一個階段再回頭補對應的段落。</p>
+<p><strong>改哪些路徑</strong>：四個 agent 定義檔本身是自包含的（frontmatter 裡的 <code>name</code>／<code>description</code>／<code>tools</code>／<code>model</code>／<code>effort</code> 這幾個欄位都沒有寫死任何專案路徑，不是只有 <code>model</code>／<code>tools</code> 兩個欄位——重點是「沒有寫死路徑」，不是欄位數量），拷過去可以直接用。Model Orchestration 那段節錄裡不只一處死連結：「盤點與原因見 <code>.claude/notes/model-seal.md</code>」跟句尾「完整規則與座位表見文末『§10/§11 core』＋<code>.claude/notes/ORCHESTRATION-PLAYBOOK.md</code>」都是指向你還沒建立的筆記檔、或這份節錄本身沒收進來的「文末」章節。節錄段落裡所有指向 <code>.claude/notes/</code> 底下筆記檔、或「文末 §」的指標句，第一階段都先整句刪掉，不要留死連結，等你自己真的建立那些筆記檔、或把對應的完整章節補進 <code>CLAUDE.md</code> 之後，再把指標句補回來。</p>
+<p><strong>怎麼驗證裝好了</strong>：在 <code>demo-app</code> repo 裡用 <code>Agent</code> 工具指定 <code>subagent_type: fast-worker</code> 派一件小事（例如「列出目前目錄的檔案清單」），完成後看它回報或 transcript 裡標示的 model——不管你當下指揮官 session 掛的是哪一檔，這次派工都應該顯示 <code>sonnet</code>，不會被主 session 目前的 model「傳染」。</p>
+<h2>階段 2：review 閘門（Ship Gate 上線）</h2>
+<p><strong>裝什麼</strong>：<code>CLAUDE.md</code> 補上 Ship Gate 流程說明；user 層兩支收尾 gate hook（<code>wf-continue-gate</code>／<code>context-handoff-gate</code>）；repo 層三支關鍵 hook（<code>enforce-model-pin</code>／<code>wf-merge-gate</code>／<code>wf-closeout</code>）。</p>
+<p><strong>拷哪些檔</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>來源（<code>files/</code>）</th><th>目的地</th></tr></thead><tbody><tr><td><code>files/hooks-user/wf-continue-gate.py</code></td><td><code>~/.claude/hooks/wf-continue-gate.py</code></td></tr><tr><td><code>files/hooks-user/context-handoff-gate.py</code></td><td><code>~/.claude/hooks/context-handoff-gate.py</code></td></tr><tr><td><code>files/hooks-user/wf-gate-common.py</code></td><td><code>~/.claude/hooks/wf-gate-common.py</code></td></tr><tr><td><code>files/scripts/context-check.py</code></td><td><code>~/.claude/scripts/context-check.py</code></td></tr><tr><td><code>files/hooks-repo/enforce-model-pin.py</code></td><td><code>demo-app/.claude/hooks/enforce-model-pin.py</code></td></tr><tr><td><code>files/hooks-repo/wf-merge-gate.py</code></td><td><code>demo-app/.claude/hooks/wf-merge-gate.py</code></td></tr><tr><td><code>files/hooks-repo/wf-markers.py</code></td><td><code>demo-app/.claude/hooks/wf-markers.py</code></td></tr><tr><td><code>files/hooks-repo/wf-closeout.py</code></td><td><code>demo-app/.claude/hooks/wf-closeout.py</code></td></tr></tbody></table></div>
+<p><code>CLAUDE.md</code> 再從 <code>files/claude-md-masked.md</code> 補進「🚨 Ship Gate — Mandatory Pre-Ship Review」那一整段。</p>
+<p>settings 註冊：<code>files/settings/user-settings.json</code> 的 <code>hooks.Stop</code> 區塊裡那兩條，合併進你自己 <code>~/.claude/settings.json</code> 的 <code>hooks.Stop</code> 陣列（沒有這個陣列就整段新增）；<code>files/settings/repo-settings.json</code> 的 <code>hooks.PreToolUse</code> 區塊裡 <code>enforce-model-pin</code>／<code>wf-merge-gate</code> 那兩條，合併進 <code>demo-app/.claude/settings.local.json</code>；同一份 <code>repo-settings.json</code> 裡 <code>wf-closeout</code> 掛的 <code>hooks.SessionStart</code>＋<code>hooks.PostToolUse</code>＋<code>hooks.Stop</code> 三條，也一起合併進 <code>demo-app/.claude/settings.local.json</code>——<code>wf-closeout</code> 是 04 章講的收尾流程（branch 清理／dev-kb 卡片／memory 更新）的機械後盾，缺一段事件它就只核對得到收尾的一部分。</p>
+<p>一個容易漏掉的地方：<code>wf-continue-gate.py</code>／<code>context-handoff-gate.py</code> 兩支都會載入同資料夾底下的 <code>wf-gate-common.py</code>，<code>wf-merge-gate.py</code> 核對逃生門標記時則會載入 <code>wf-markers.py</code>——這兩支是共用 helper，不是獨立可跑的 hook 本體，上面表格已經把它們跟各自要搭的 hook 放在同一批拷貝清單裡，記得一起拷，不要只拷 hook 本體。<code>enforce-model-pin</code> 沒有這個依賴，單獨拷就能跑。再深一層：<code>wf-gate-common.py</code> 本身在真的要算 context 百分比那一刻，會去載 <code>~/.claude/scripts/context-check.py</code>——這支不在 <code>hooks/</code> 底下，是獨立放在 <code>~/.claude/scripts/</code> 的另一個目錄，兩支 Stop gate（<code>wf-continue-gate</code>／<code>context-handoff-gate</code>）靠它量 context 用量，沒拷它們永遠不會動作（不報錯、不擋，就是安靜地一直判定「還沒到門檻」）。</p>
+<p>再一個要老實講的地方：04 章跟 <code>wf-merge-gate</code> 的擋下訊息都提過「機械 gate script」這一步，但那是每個專案自己該檢查什麼都不一樣的腳本（命名慣例、禁用寫法、安全底線……），<code>files/</code> 快照不收錄，也不該收錄——照 06 章的規則清單長出你自己專案的版本，或者先放一支永遠 <code>exit 0</code> 的空腳本佔位，之後再逐條補檢查項。<code>wf-merge-gate</code> 實際核對的不是這支腳本本身，是<strong>跑完之後留下的標記</strong>：全部檢查過了，用階段 2 已經拷過的 <code>wf-markers.py</code> 記兩個標記——<code>python3 .claude/hooks/wf-markers.py ship-green &lt;commit sha&gt;</code> 寫 Ship Gate 綠燈標記，<code>python3 .claude/hooks/wf-markers.py gate-b &lt;commit sha&gt;</code> 寫收尾回報標記，兩個都綁定那顆確切的 commit sha，<code>wf-merge-gate</code> 查的就是這兩個標記在不在。</p>
+<p><strong>改哪些路徑</strong>：hook 指令裡的 <code>$HOME</code>／<code>$CLAUDE_PROJECT_DIR</code> 是 Claude Code 執行時自動展開的環境變數，不用手動改；只有你把 agent 定義或 hook 放在非標準路徑時，才需要同步改 settings 裡對應的字串。</p>
+<p><strong>怎麼驗證裝好了</strong>：故意違規兩次——(a) 用一個通用型 <code>Agent</code>（不是四個專職 agent 之一）派工卻不帶 <code>model=</code> 參數，應該被 <code>enforce-model-pin</code> 擋下，訊息附上該補哪個 model；(b) 在還沒有 Ship Gate 綠燈標記的情況下對一個測試 PR 跑 <code>gh pr merge</code>，應該被 <code>wf-merge-gate</code> 擋下，訊息附上缺哪個標記——這個驗證前提是要有一個真的 PR＋<code>gh</code> 已登入，兩者缺一都驗不出「擋對地方」；沒有真的 PR 或沒登入，gate 會用「解析不到 head sha」的另一種訊息擋下，跟「缺標記」是兩種不同訊息，但兩種都算有擋，不算沒裝好。</p>
+<h2>階段 3：dev-kb（外部記憶上線）</h2>
+<p><strong>裝什麼</strong>：一份獨立於 <code>demo-app</code> 之外的 dev-kb git repo，裝好 05 章講的資料結構（<code>cards/</code>／<code>hot.md</code>／<code>index.md</code>／<code>timeline/</code>／<code>brainstorms/</code>／<code>plans/</code>／<code>html/</code>）跟四支寫入 CLI（<code>claim-card.js</code>／<code>close-card.js</code>／<code>plan-add.js</code>／<code>build.js</code>）。</p>
+<p><strong>拷哪些檔</strong>：老實講——這份 handbook 的 <code>files/</code> 快照不收錄 dev-kb 自己的 <code>tools/</code>，那是整包工具原始碼，不是文件裡直接遮蔽引用的單一檔案快照（見 <code>files/SNAPSHOT.md</code> 的收錄範圍說明）。這件事在這份 handbook 單獨分享出去時最明顯：階段 3、4 要用到的 dev-kb <code>tools/</code> 不在快照裡，有兩條路——(1) 從一份已經在跑的 dev-kb repo，把整個 <code>tools/</code> 目錄（含 <code>lib/</code>、<code>migrations/</code> 這些支援檔）直接拷過去你的新 repo 根目錄，這是「repo 級複製」，不是「拷幾個檔案」；(2) 沒有現成的 dev-kb repo 可拷，就讓 AI 照 05 章「資料結構」講的規格（<code>cards/</code>／<code>hot.md</code>／<code>index.md</code>／<code>timeline/</code>／<code>brainstorms/</code>／<code>plans/</code>／<code>html/</code> 這幾個產物、外加下面的 <code>config.json</code> 形狀）從頭重建一套行為等效的工具——規格夠明確，不需要看到原始碼也能重建。</p>
+<p><strong>改哪些路徑</strong>：新 repo 根目錄放一份 <code>config.json</code>（完整範例見 <a href="#ch-05" class="xref">05-dev-kb.md</a> 的「資料結構」一節），把 <code>projects.&lt;你的專案代稱&gt;</code> 底下的 <code>repoPath</code>／<code>learnPath</code>／<code>sddPath</code>／<code>changelogPath</code> 改成你 <code>demo-app</code> repo 的實際路徑；<code>archiveAfterDays</code>／<code>hotMaxLines</code>／<code>indexMaxLines</code> 這些結構參數可以先照抄示範值；沒有 Obsidian 就把 <code>mirrorPath</code> 那一行整條刪掉。</p>
+<p><strong>怎麼驗證裝好了</strong>：<code>node tools/claim-card.js demo-app --title "quickstart 驗證用卡片" --area demo-area --severity low</code> 開一張卡，記下它印出來的卡號，接著 <code>node tools/close-card.js demo-app &lt;卡號&gt; --version v0.0.1 --pr 0 --evidence "手動驗證" --timeline "quickstart 驗證"</code> 把它關掉；打開 <code>timeline/&lt;今年年份&gt;.md</code>，應該自動多一行對應敘述，全程沒有手動編輯過那份檔案。</p>
+<h2>階段 4：多 session（平行協作上線）</h2>
+<p><strong>裝什麼</strong>：04 章講的 naming 規則（「日期＋專案＋流水號」，例如 <code>demo-20260810-2</code>）；互撞防護 hooks——<code>block-git-add-all</code>（擋 dev-kb repo 的全量 <code>git add</code>）、<code>sendmessage-liveness-gate</code>（擋誤傳訊息給殭屍 session）；可選的 herdr（session 面板管理小工具）或用 tmux 手動命名 pane 當替代方案。</p>
+<p><strong>拷哪些檔</strong>：</p>
+<div class="table-wrap"><table><thead><tr><th>來源（<code>files/</code>）</th><th>目的地</th></tr></thead><tbody><tr><td><code>files/hooks-devkb/block-git-add-all.py</code></td><td><code>&lt;你的 dev-kb repo&gt;/.claude/hooks/block-git-add-all.py</code></td></tr><tr><td><code>files/hooks-user/sendmessage-liveness-gate.py</code></td><td><code>~/.claude/hooks/sendmessage-liveness-gate.py</code></td></tr><tr><td><code>files/hooks-user/herdr-agent-state.sh</code>（可選，只有真的用 herdr 面板工具才需要）</td><td><code>~/.claude/hooks/herdr-agent-state.sh</code></td></tr></tbody></table></div>
+<p>settings 註冊：dev-kb repo 自己的 <code>.claude/settings.json</code> 加一段 <code>hooks.PreToolUse</code>／matcher <code>Bash</code> 指到 <code>block-git-add-all</code>；user 層 <code>~/.claude/settings.json</code> 的 <code>hooks.PreToolUse</code> 補上 <code>files/settings/user-settings.json</code> 裡 matcher <code>SendMessage</code> 那一條（<code>sendmessage-liveness-gate</code>）；真的裝 herdr 才加 <code>hooks.SessionStart</code> 那一條。</p>
+<p><strong>改哪些路徑</strong>：naming 規則是純慣例，沒有檔案可改，靠自己開 session 時照那個形狀命名；<code>sendmessage-liveness-gate</code> 判斷「看起來像沒對話過」的三種命名形狀是寫死在程式碼裡的 pattern，如果你的環境自動命名長相跟範例不一樣（例如面板工具生成的殭屍名稱格式不同），要直接改程式碼裡對應的判斷式，不是外部設定檔能調的參數；不用 herdr 就整段跳過，改用 tmux 手動把每個 pane 標題改成看得出身分的名字。</p>
+<p><strong>怎麼驗證裝好了</strong>：開兩個終端機視窗（或兩個 tmux pane）都指到同一份 dev-kb repo，同時對同一個專案代稱各自跑一次 <code>claim-card.js</code> 開卡指令——05 章講過的檔案系統獨佔建立語意會保證只有一個 process 拿到那個卡號，另一個要嘛自動重試拿下一號、要嘛拿到明確失敗，不會出現兩張卡互相蓋掉的情況；再到 dev-kb repo 裡試一次 <code>git add -A</code>，應該被 <code>block-git-add-all</code> 擋下，改成列明確路徑的 <code>git add</code> 才會過。</p>
+<h2>其餘 hook 什麼時候補</h2>
+<p>03 章總表列的 hook，前面四個階段沒有全部裝完——沒出現在拷貝表裡的那些，不是複刻這套流程的必要條件，是品質提醒類、記錄類、資源保護類、knowledge 類、worktree 類這幾種錦上添花的加強，核心的席次分工、Ship Gate、dev-kb、多 session 防護跑順之後，想加再加就好，不用一次全裝。要補的時候照同一個模式：從 <code>files/</code> 底下把對應 hook 拷過去（<code>reminder-echoes</code> 沒有獨立 script，是直接寫在 settings 裡的 <code>echo</code> 指令，照著抄一行就好），再把 <code>files/settings/</code> 裡對應那條註冊合併進你的 settings，跟前面各階段的做法完全一樣。</p>
+<ul><li><strong>提醒類</strong>：<code>reminder-echoes</code>（settings 裡的 <code>echo</code> 提醒文字）、<code>ecc-slim-guard</code>、<code>wf-plan-format</code>。</li><li><strong>記錄類</strong>：<code>agent-dispatch-log</code>、<code>send-file-cleanup</code>。</li><li><strong>保護類</strong>：<code>wf-worktree-cap</code>、<code>read-range-guard</code>、<code>memory-size-guard</code>、<code>wf-dep-gate</code>。</li><li><strong>knowledge 類</strong>：<code>kb-session-inject</code>。</li><li><strong>worktree 類</strong>：<code>wf-worktree-seed</code>。</li></ul>
+<h2>常見卡點</h2>
+<ul><li><strong>hook 沒觸發</strong>：查 settings 註冊——是不是真的合併進對的檔案（user 層 <code>~/.claude/settings.json</code>、repo 層各自的 <code>.claude/settings.local.json</code>）；<code>matcher</code> 名稱是不是真的對得上你呼叫的工具名稱；指令字串裡的路徑有沒有正確展開。</li><li><strong>gate 擋錯</strong>（該擋沒擋、或不該擋卻擋了）：先查 03 章「逃生門總覽」——大多數會擋事的 hook 都留了一次性、帶理由、留稽核紀錄的 override 指令，先用逃生門通過、事後再回頭查判斷邏輯哪裡不對，不要為了一次誤擋就整支 hook 刪掉。</li><li><strong>路徑跟範例對不上</strong>：檢查 settings 裡 hook 指令用的 <code>$HOME</code>／<code>$CLAUDE_PROJECT_DIR</code> 有沒有真的展開成你要的位置；<code>wf-worktree-seed</code> 這類需要客製化清單的 hook，用 <code>.claude/worktree-seed.json</code> 的 <code>include</code>／<code>exclude</code> 調整，不要直接改 hook 本體的預設清單。</li></ul>
+<p>---</p>
+<p>延伸閱讀：席次與派工規則見 <a href="#ch-01" class="xref">01-agents-cowork.md</a>；每支 hook 的完整行為與逃生門見 <a href="#ch-03" class="xref">03-hooks.md</a>；完整開發流程與多 session 協作見 <a href="#ch-04" class="xref">04-dev-flow.md</a>；dev-kb 資料結構與工具指令見 <a href="#ch-05" class="xref">05-dev-kb.md</a>；通用規則清單見 <a href="#ch-06" class="xref">06-common-rules.md</a>。</p>
+</section>
+</main>
+
+<footer>
+<p>快照日期：2026-08-10｜本頁由 handbook md 產生，md 為本源。</p>
+</footer>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav a[href^="#ch-"]'));
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section.chapter'));
+  if (!('IntersectionObserver' in window) || !sections.length) return;
+
+  function setActive(id){
+    links.forEach(function(a){
+      var match = a.getAttribute('href') === '#' + id;
+      a.classList.toggle('active', match);
+    });
+  }
+
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if (entry.isIntersecting){
+        setActive(entry.target.id);
+      }
+    });
+  }, { rootMargin: '-10% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(function(s){ observer.observe(s); });
+})();
+</script>
+</body>
+</html>
