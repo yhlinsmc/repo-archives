@@ -353,8 +353,7 @@ footer{
 <h3>外部記憶</h3>
 <p>技術決策、規則、待辦事項、歷史教訓都存在對話之外的檔案裡（dev-kb 這個「第二大腦」＋各種 memory 檔案），不靠單一 session 的對話記憶。任何新開的 session 讀這些檔案就能接手前面沒做完的工作。資料結構、生命週期、工具指令見 <a href="#ch-05" class="xref">05-dev-kb.md</a>。</p>
 <h2>整體架構</h2>
-<div class="diagram"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EAF0F8","primaryTextColor":"#1C2733","primaryBorderColor":"#2B4C8C","secondaryColor":"#F0F3F6","secondaryTextColor":"#1C2733","secondaryBorderColor":"#5A6B7C","tertiaryColor":"#FAFBFC","tertiaryTextColor":"#1C2733","tertiaryBorderColor":"#D8DFE6","lineColor":"#5A6B7C","textColor":"#1C2733","clusterBkg":"#F0F3F6","clusterBorder":"#D8DFE6","edgeLabelBackground":"#FAFBFC","nodeTextColor":"#1C2733"}}}%%
-graph TD
+<div class="diagram"><pre class="mermaid">graph TD
     User(使用者) --&gt;|下指令 / 給回饋| Commander[指揮官 session]
 
     subgraph Workers["worker agents（派工對象）"]
@@ -460,8 +459,7 @@ graph TD
 <p>批次用 <code>set</code> 登記一次（<code>wf-continue-gate.py set PR-3 PR-2 PR-5 --note "..."</code>），之後 <code>done</code> 表示某一顆真的做完、<code>hold</code> 把暫時卡住（等別的 session、等外部訊號）的項目移出隊列但不算完成、<code>unhold</code> 放回去、<code>clear</code> 表示整批結束。狀態存在該 repo 自己的目錄下，一個 repo 的批次不會影響另一個 repo。</p>
 <p>批次沒有指定由哪個 session 執行——第一個在 context 門檻以下看到它的 Stop 事件就會「認領」，之後只有認領的那個 session 會被這支 hook 追著問；認領的 session 如果超過 30 分鐘沒有動靜（用它自己的對話紀錄檔更新時間判斷），下一個活躍的 session 可以接手。多個 session 平行處理同一批工作時，<code>set --held 'UNIT=REASON'</code> 可以在登記當下就把別人正在做的項目標成 held，避免每個 session 都搶著認領同一項。</p>
 <p>一旦這個 session 的 context 用量到了收尾門檻，這支 hook 就不再逼著開新工作——把場子讓給 <code>context-handoff-gate</code>。（量 context 用量這件事本身外包給另一支共用腳本，見下面 <code>context-handoff-gate</code> 專節；快照放在 <code>files/scripts/context-check.py</code>。）</p>
-<div class="diagram"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EAF0F8","primaryTextColor":"#1C2733","primaryBorderColor":"#2B4C8C","secondaryColor":"#F0F3F6","secondaryTextColor":"#1C2733","secondaryBorderColor":"#5A6B7C","tertiaryColor":"#FAFBFC","tertiaryTextColor":"#1C2733","tertiaryBorderColor":"#D8DFE6","lineColor":"#5A6B7C","textColor":"#1C2733","clusterBkg":"#F0F3F6","clusterBorder":"#D8DFE6","edgeLabelBackground":"#FAFBFC","nodeTextColor":"#1C2733"}}}%%
-stateDiagram-v2
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
     [*] --&gt; Registered: set
     Registered --&gt; Claimed: 第一個 Stop（context 門檻內）
     Claimed --&gt; Working: 隊列非空
@@ -477,8 +475,7 @@ stateDiagram-v2
 <p>45% 這一段只在<strong>批次工作的邊界</strong>上才會逼（一顆工作剛做完，或根本沒有批次在跑），所以正在做的那一顆不會被腰斬；60% 跟 75% 則是不管有沒有批次、直接逼。逼出來的要求固定三件事：不再開新工作、把手上的收尾做完（branch 清掉、dev-kb 卡片與 timeline、MEMORY.md 一行）、寫一份完整的交接 prompt。</p>
 <p>這支跟 <code>wf-continue-gate</code> 兩支 Stop hook 量 context 百分比用的是同一支共用腳本（<code>~/.claude/scripts/context-check.py</code>，快照在 <code>files/scripts/context-check.py</code>）——沒拷它，兩支 hook 讀不到用量，會一路安靜地判定「還沒到門檻」直接放行，不會報錯也不會擋，等於這條規則整個失效。</p>
 <p>交接 prompt 有明確的完整性驗證：必須是單一個 code block，裡面要涵蓋五個要素（出了什麼／下一顆是什麼／要先讀什麼／哪些決策已鎖定不准重談／<code>wf-continue-gate</code> 的批次登記行或「批次已空」）裡至少四個，少於四個會被判不合格、擋著重寫，但重試有上限，超過上限就放行，避免把 session 卡死在無限重寫交接 prompt 的迴圈裡。</p>
-<div class="diagram"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EAF0F8","primaryTextColor":"#1C2733","primaryBorderColor":"#2B4C8C","secondaryColor":"#F0F3F6","secondaryTextColor":"#1C2733","secondaryBorderColor":"#5A6B7C","tertiaryColor":"#FAFBFC","tertiaryTextColor":"#1C2733","tertiaryBorderColor":"#D8DFE6","lineColor":"#5A6B7C","textColor":"#1C2733","clusterBkg":"#F0F3F6","clusterBorder":"#D8DFE6","edgeLabelBackground":"#FAFBFC","nodeTextColor":"#1C2733"}}}%%
-stateDiagram-v2
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
     [*] --&gt; Below45: pct &lt; 45%
     Below45 --&gt; Band45: pct&gt;=45%&lt;br/&gt;且批次邊界
     Band45 --&gt; Band60: pct&gt;=60%
@@ -506,8 +503,7 @@ stateDiagram-v2
 <p>PR merge 之後常見的漏收尾——feature branch 沒刪、dev-kb 卡片沒更新、MEMORY.md 沒補一行——這支 hook 掛在三個事件上，把整個收尾流程串起來機械檢查。</p>
 <p>Merge 動作跑完之後（PostToolUse），先去查這個 PR 是不是<strong>真的</strong>進入了 merged 狀態（不能只看指令的結束代碼，有些 merge 模式即使沒真的合併也會回傳成功），確認是才記一筆「待收尾」。下一次要結束這一輪（Stop）時，逐項核對：feature branch 是否已刪、有沒有殘留的 worktree、記憶體檔案是否在 merge 之後真的被動過、Gate B 的收尾回報標記是否存在——任何一項沒過就擋，訊息附上每一項缺什麼、該下什麼指令補。擋滿 2 次之後自動放行，改成把待辦事項留給下一個 session 接手，並在它的 SessionStart 主動提醒——避免收尾這件事在同一個 session 裡無限迴圈卡死，但也不讓它悄悄被遺忘。</p>
 <p>多個 session 共用同一個 repo 時，這支 hook 只會擋<strong>真正執行那次 merge 的 session</strong>，不會誤把收尾義務推給旁邊剛好在同一個 repo 工作的其他 session；判斷對方是否還活著，看的是它自己的對話紀錄檔多久沒更新。</p>
-<div class="diagram"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EAF0F8","primaryTextColor":"#1C2733","primaryBorderColor":"#2B4C8C","secondaryColor":"#F0F3F6","secondaryTextColor":"#1C2733","secondaryBorderColor":"#5A6B7C","tertiaryColor":"#FAFBFC","tertiaryTextColor":"#1C2733","tertiaryBorderColor":"#D8DFE6","lineColor":"#5A6B7C","textColor":"#1C2733","clusterBkg":"#F0F3F6","clusterBorder":"#D8DFE6","edgeLabelBackground":"#FAFBFC","nodeTextColor":"#1C2733"}}}%%
-stateDiagram-v2
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
     [*] --&gt; Pending: merge 確認完成
     Pending --&gt; Checking: 下一次 Stop
     Checking --&gt; Blocked: 缺項存在&lt;br/&gt;（branch/memory/Gate B）
@@ -541,8 +537,7 @@ stateDiagram-v2
 <h2>流程總覽（生命週期）</h2>
 <p>一個需求進來之後，固定走這幾個階段：</p>
 <ul><li><strong>brainstorm（逐題拍板）</strong>：動手寫任何東西之前，先透過一次問一個問題的方式把需求跟設計釐清，直到使用者對設計點頭同意為止，擋住「想法還沒想清楚就開始寫」。</li><li><strong>spec</strong>：把 brainstorm 拍板的結論寫成一份規格文件，作為後面 plan 拆任務的依據。</li><li><strong>plan</strong>：把 spec 拆解成一個一個具體、就算換一個完全不熟這個專案的人也能照做的任務。plan 檔有一條固定樣板規則：Phase 清單裡「Implement」跟「Ship」之間一定要有一個明確寫出來的「Review Gate」phase，沒有就算這份計畫破損，實作前得先補上。機械上目前只有 <code>wf-plan-format</code> 這支 hook 幫忙提醒缺章節，本身不擋——真正的把關落在下一步「開卡」跟「實作」前的自我核對。</li><li><strong>開卡</strong>：需求跟計畫都定案之後，才正式在知識庫裡開一張卡片，作為這個工作單位從頭到尾的追蹤單位。開卡走專門的 CLI 指令，靠檔案系統本身的獨佔建立語意搶卡號，不是「看目前最大號碼＋1」——這件事在多 session 平行開發那一節會再細講。</li><li><strong>實作（TDD）</strong>：照著 plan 上的任務逐一派工，遵守先寫測試、看它失敗、再寫最少的程式碼讓它通過的節奏。派工的時候要嘛用專職 agent，要嘛用通用型 agent 但一定要明講 model，否則會被 <code>enforce-model-pin</code> 擋下；要加新套件得先過討論，否則 <code>wf-dep-gate</code> 會擋住寫入；開新的 worktree 數量或本機資源撐不住會被 <code>wf-worktree-cap</code> 擋，開成功的新 worktree 則會被 <code>wf-worktree-seed</code> 自動補齊沒進版本控制、但跑起來必需的檔案。</li><li><strong>Ship Gate</strong>：出貨前最後一關，內容較多，獨立成下一節細講。</li><li><strong>merge</strong>：Ship Gate 全部通過之後才能合併，<code>wf-merge-gate</code> 會在合併前核對兩個跟這顆 commit 綁定的標記是否都存在，缺一就擋。</li><li><strong>收尾</strong>：merge 完的同一個動作裡，把 feature branch 刪掉、知識庫卡片關閉、memory 檔案補一行。<code>wf-closeout</code> 會在下一次要結束這一輪的時候逐項核對這些收尾動作是不是真的做了，缺項就擋，最多擋兩次，擋滿就把待辦事項留給下一個 session。</li></ul>
-<div class="diagram"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EAF0F8","primaryTextColor":"#1C2733","primaryBorderColor":"#2B4C8C","secondaryColor":"#F0F3F6","secondaryTextColor":"#1C2733","secondaryBorderColor":"#5A6B7C","tertiaryColor":"#FAFBFC","tertiaryTextColor":"#1C2733","tertiaryBorderColor":"#D8DFE6","lineColor":"#5A6B7C","textColor":"#1C2733","clusterBkg":"#F0F3F6","clusterBorder":"#D8DFE6","edgeLabelBackground":"#FAFBFC","nodeTextColor":"#1C2733"}}}%%
-graph TD
+<div class="diagram"><pre class="mermaid">graph TD
     Req[需求] --&gt; BS["brainstorm&lt;br/&gt;逐題拍板"]
     BS --&gt; Spec[spec]
     Spec --&gt; Plan["plan&lt;br/&gt;含 Review Gate phase"]
@@ -565,8 +560,7 @@ graph TD
 <p>圖上兩個環是有意設計的：一是「批次還有下一顆」會繞回開卡，做完一顆自動接下一顆，不是每顆都停下來問要不要繼續；二是 context 用量到門檻時，不管批次還有沒有剩，都會被 <code>context-handoff-gate</code> 逼出來收尾。這兩支 hook 的完整狀態機在 <a href="#ch-03" class="xref">03-hooks.md</a> 已經講過，這裡只標它們卡在流程的哪個節點上。</p>
 <h2>Ship Gate 詳解</h2>
 <p>Ship Gate 不是一個單一動作，而是一串固定順序的檢查，任何一步沒過都不能往下走：</p>
-<div class="diagram"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EAF0F8","primaryTextColor":"#1C2733","primaryBorderColor":"#2B4C8C","secondaryColor":"#F0F3F6","secondaryTextColor":"#1C2733","secondaryBorderColor":"#5A6B7C","tertiaryColor":"#FAFBFC","tertiaryTextColor":"#1C2733","tertiaryBorderColor":"#D8DFE6","lineColor":"#5A6B7C","textColor":"#1C2733","clusterBkg":"#F0F3F6","clusterBorder":"#D8DFE6","edgeLabelBackground":"#FAFBFC","nodeTextColor":"#1C2733"}}}%%
-graph TD
+<div class="diagram"><pre class="mermaid">graph TD
     T["測試全綠"] --&gt; RV["runtime verify&lt;br/&gt;執行路徑改動才開真實 artifact"]
     RV --&gt; MG["機械 gate script"]
     MG --&gt; RW["Claude review wave&lt;br/&gt;對抗席 + 語言別席 + design pass + 條件席"]
@@ -638,8 +632,7 @@ graph TD
   "mirrorPath": "/path/to/your-obsidian-vault"
 }</code></pre>
 <p><code>archiveAfterDays</code>／<code>hotMaxLines</code>／<code>indexMaxLines</code> 對應上面提到的那幾個硬上限；<code>projects</code> 是一個 map，key（範例裡的 <code>demo-app</code>）就是後面工具指令手冊裡 <code>&lt;project&gt;</code> 要填的那個專案代稱，value 底下四條路徑指到那個專案自己的 repo、<code>LEARN.md</code>、<code>SDD.md</code>（或你自己專案的架構規格文件）、<code>CHANGELOG.md</code>——沒有的欄位可以填 <code>null</code>；<code>mirrorPath</code> 是 Obsidian mirror 一節提到的鏡像輸出路徑，沒有要做鏡像同步就整條拿掉。</p>
-<div class="diagram"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"primaryColor":"#EAF0F8","primaryTextColor":"#1C2733","primaryBorderColor":"#2B4C8C","secondaryColor":"#F0F3F6","secondaryTextColor":"#1C2733","secondaryBorderColor":"#5A6B7C","tertiaryColor":"#FAFBFC","tertiaryTextColor":"#1C2733","tertiaryBorderColor":"#D8DFE6","lineColor":"#5A6B7C","textColor":"#1C2733","clusterBkg":"#F0F3F6","clusterBorder":"#D8DFE6","edgeLabelBackground":"#FAFBFC","nodeTextColor":"#1C2733"}}}%%
-graph LR
+<div class="diagram"><pre class="mermaid">graph LR
     ClaimCard[["claim-card.js&lt;br/&gt;開卡"]] --&gt; Cards["cards/active/*.md"]
     CloseCard[["close-card.js&lt;br/&gt;關卡"]] --&gt; Cards
     PlanAdd[["plan-add.js&lt;br/&gt;登記批次"]] --&gt; Plans["plans/(topic).md"]
