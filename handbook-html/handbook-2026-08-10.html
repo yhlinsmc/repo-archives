@@ -181,6 +181,64 @@ pre.code-block code{
   color:var(--muted);
   font-size:0.82rem;
 }
+.diagram svg .node rect,
+.diagram svg .node circle,
+.diagram svg .node ellipse,
+.diagram svg .node polygon,
+.diagram svg .node path,
+.diagram svg .statediagram-cluster rect{
+  fill:var(--tint) !important;
+  stroke:var(--accent) !important;
+}
+.diagram svg .cluster rect{
+  fill:var(--panel) !important;
+  stroke:var(--line) !important;
+}
+.diagram svg .node circle.state-start,
+.diagram svg .node .fork-join{
+  fill:var(--accent) !important;
+  stroke:var(--accent) !important;
+}
+.diagram svg .node circle.state-end,
+.diagram svg .end-state-inner{
+  fill:var(--muted) !important;
+  stroke:var(--accent) !important;
+}
+.diagram svg .label text,
+.diagram svg .nodeLabel,
+.diagram svg .cluster-label text,
+.diagram svg .cluster-label span,
+.diagram svg .cluster text,
+.diagram svg .cluster span,
+.diagram svg .stateLabel text,
+.diagram svg .statediagram-cluster .nodeLabel,
+.diagram svg .state-note text,
+.diagram svg span{
+  fill:var(--ink) !important;
+  color:var(--ink) !important;
+}
+.diagram svg .edgePath .path,
+.diagram svg .flowchart-link,
+.diagram svg .transition{
+  stroke:var(--muted) !important;
+}
+.diagram svg .marker,
+.diagram svg .marker.cross,
+.diagram svg .arrowheadPath,
+.diagram svg [id$="-barbEnd"],
+.diagram svg [id$="-dependencyStart"],
+.diagram svg [id$="-dependencyEnd"]{
+  fill:var(--muted) !important;
+  stroke:var(--muted) !important;
+}
+.diagram svg .edgeLabel,
+.diagram svg .edgeLabel p,
+.diagram svg .edgeLabel rect,
+.diagram svg .labelBkg,
+.diagram svg .stateLabel .box{
+  background-color:var(--ground) !important;
+  fill:var(--ground) !important;
+}
 .callout{
   background:var(--tint);
   border-left:3px solid var(--accent);
