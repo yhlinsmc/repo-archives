@@ -13,11 +13,27 @@ arg="$1"
 script_path="$(readlink -f "$0")"
 script_dir="$(dirname "$script_path")"
 conf_file="${script_dir}/repos.conf"
+ARCHIVE_ROOT="$script_dir"
+
+# Serialize concurrent runs -- two archive calls racing the same INDEX.md
+# read-modify-write (or the same git add/commit) would corrupt one or both.
+exec 200>"${ARCHIVE_ROOT}/.archive.lock"
+flock -n 200 || { echo "another archive run in progress" >&2; exit 1; }
+
+trim() {
+  local s="$1"
+  s="${s#"${s%%[![:space:]]*}"}"
+  s="${s%"${s##*[![:space:]]}"}"
+  printf '%s' "$s"
+}
 
 target_path=""
 if [ -f "$conf_file" ]; then
   while IFS='=' read -r alias_name alias_path; do
-    # skip blank lines and comments
+    alias_name="$(trim "$alias_name")"
+    alias_path="$(trim "$alias_path")"
+    # skip blank lines and comments (trimmed first, so leading-whitespace
+    # comments like "  # note" are caught too)
     [ -z "$alias_name" ] && continue
     case "$alias_name" in \#*) continue ;; esac
     if [ "$alias_name" = "$arg" ]; then
@@ -104,7 +120,10 @@ updated_entries="$(echo "$updated_entries" | sed '/^$/d')"
 
 entry_count="$(echo "$updated_entries" | grep -c '^| ' || true)"
 
-if [ "$entry_count" -gt 3 ]; then
+# `while`, not `if` -- a hand-edited INDEX.md can carry more than one entry
+# past the retention limit, and a single trim step would leave it still
+# over the cap.
+while [ "$entry_count" -gt 3 ]; do
   oldest_line="$(echo "$updated_entries" | head -n 1)"
   oldest_zip_name="$(echo "$oldest_line" | awk -F'|' '{print $2}' | xargs)"
   oldest_zip_path="${out_dir}/${oldest_zip_name}"
@@ -112,7 +131,8 @@ if [ "$entry_count" -gt 3 ]; then
     rm -f "$oldest_zip_path"
   fi
   updated_entries="$(echo "$updated_entries" | tail -n +2)"
-fi
+  entry_count="$(echo "$updated_entries" | grep -c '^| ' || true)"
+done
 
 {
   echo "# Archive index: ${repo_name}"
